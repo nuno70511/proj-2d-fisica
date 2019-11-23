@@ -15,10 +15,10 @@ class Bullet:
 class Target:
     _targets = []
 
-    def __init__(self, x):
+    def __init__(self, x, y):
         self._targets.append(self)
         self.x = x
-
+        self.y = y
 
 WIN_WIDTH = 700; WIN_HEIGHT = 500
 win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
@@ -33,7 +33,8 @@ BLUE = (0, 0, 255)
 def get_font(size) : return pygame.font.Font("./assets/PressStart2P-Regular.ttf", size)
 MSG_YOUWIN = get_font(48).render("YOU WIN!", True, WHITE, BLACK)
 MSG_GAMEOVER = get_font(48).render("GAME OVER!", True, RED, BLACK)
-MSG_NEWGAME = get_font(12).render("PRESS [ENTER] TO PLAY A NEW GAME.", True, WHITE, BLACK)
+MSG_NEWGAME = get_font(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
+MSG_QUIT = get_font(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
 
 PADDLE_WIDTH = 30                   #   largura do tanque
 PADDLE_Y = WIN_HEIGHT - 10          #   o valor das ordenadas do topo do tanque
@@ -42,30 +43,27 @@ vx = 10
 vy = 10
 dt = 3
 targets_move_right = True       #   condição de os alvos estarem a mover-se para a direita
-targets_y = 50  #   o valor das ordenadas dos alvos mais perto do tanque
+targets_move_down = False       #   condição de os alvos moverem-se para baixo
 
-# instancializar 5 alvos
-Target(20)
-Target(70)
-Target(120)
-Target(170)
-Target(220)
+# instancializar 10 alvos
+Target(20, 40); Target(70, 40); Target(120, 40); Target(170, 40); Target(220, 40)
+Target(20, 90); Target(70, 90); Target(120, 90); Target(170, 90); Target(220, 90)
 
 while True:
     win.fill(BLACK)
 
     for event in pygame.event.get():
-        if event.type == pygame.KEYUP:
+        if event.type == pygame.KEYUP and dt != 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
                 x = paddle_x + PADDLE_WIDTH / 2
                 y = PADDLE_Y - 10 
                 Bullet(x, y)
 
     key_pressed = pygame.key.get_pressed()
-    if key_pressed[K_LEFT]: # mover o tanque para a esquerda
+    if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
         if paddle_x <= 1: paddle_x = 1
         else: paddle_x -= dt
-    if key_pressed[K_RIGHT]: # mover o tanque para a direita
+    if key_pressed[K_RIGHT]  and dt != 0: # mover o tanque para a direita
         if paddle_x + PADDLE_WIDTH + 1 >= WIN_WIDTH: paddle_x = WIN_WIDTH - PADDLE_WIDTH - 1
         else: paddle_x += dt
     if key_pressed[K_ESCAPE]:   # se ESC premido, sair do jogo
@@ -75,12 +73,8 @@ while True:
         Bullet._bullets = []
         Target._targets = []
         targets_move_right = True
-        targets_y = 50
-        Target(20)
-        Target(70)
-        Target(120)
-        Target(170)
-        Target(220)
+        Target(20, 40); Target(70, 40); Target(120, 40); Target(170, 40); Target(220, 40)
+        Target(20, 90); Target(70, 90); Target(120, 90); Target(170, 90); Target(220, 90)
         dt = 3
     
 
@@ -92,14 +86,17 @@ while True:
 
         pygame.draw.circle(win, BLUE, ((int)(bullet.x), (int)(bullet.y)), 10, 0) # desenhar as balas
 
+        if not Target._targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
+                                        # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
+
         bullet.y -= 10 * dt * 0.1 # mover as balas
 
-        if bullet.y >= targets_y - 10 and bullet.y <= targets_y + 10: # verificar se uma bala está à mesma altitude dos alvos
-            for target in Target._targets:                                  # para cada alvo,
-                if bullet.x >= target.x - 10 and bullet.x <= target.x + 10: # verificar se a bala se sobrepõe a algum
-                    Bullet._bullets.remove(bullet)                          # se sim, remover a bala e o alvo
-                    Target._targets.remove(target)
-                    break
+        for target in Target._targets:                                      # para cada alvo,
+            if (bullet.y >= target.y - 10 and bullet.y <= target.y + 10     # se uma bala está à mesma altitude dos alvos
+            and bullet.x >= target.x - 10 and bullet.x <= target.x + 10):   # verificar se a bala se sobrepõe a algum
+                Bullet._bullets.remove(bullet)                              # se sim, remover a bala e o alvo
+                Target._targets.remove(target)
+                break
 
         if bullet.y <= 0: Bullet._bullets.remove(bullet) # apagar as balas que saem da janela
 
@@ -107,13 +104,13 @@ while True:
     for target in Target._targets:
 
         # desenhar alvos
-        pygame.draw.circle(win, RED, ((int)(target.x), targets_y), 10, 0)
+        pygame.draw.circle(win, RED, ((int)(target.x), target.y), 10, 0)
 
         # mover os alvos
         if targets_move_right: target.x += vx * dt * 0.1
         if not targets_move_right: target.x -= vx * dt * 0.1
 
-        if targets_y >= PADDLE_Y and target.x >= paddle_x and target.x <= paddle_x + PADDLE_WIDTH:
+        if target.y >= PADDLE_Y and target.x >= paddle_x and target.x <= paddle_x + PADDLE_WIDTH:
             dt = 0
             win.blit(
                 MSG_GAMEOVER,
@@ -127,14 +124,19 @@ while True:
             )
 
         # quando os alvos chegam ao extremo direito do ecrã
-        if (target.x >= WIN_WIDTH - 20):
+        if target.x >= WIN_WIDTH - 20:
             targets_move_right = False
-            targets_y += 50
+            targets_move_down = True
 
         # quando os alvos chegam ao extremo esquerdo do ecrã
-        if (target.x <= 20):
+        if target.x <= 20:
             targets_move_right = True
-            targets_y += 50
+            targets_move_down = True
+
+    # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos
+    if targets_move_down:
+        for target in Target._targets: target.y += 50
+        targets_move_down = False
 
     if not Target._targets:     # se não houver alvos, apresentar mensagem de jogo ganho
         dt = 0
@@ -147,6 +149,9 @@ while True:
             # centrar no eixo dos x                         centrar no eixo dos y e empurrar para baixo 50px
             [ WIN_WIDTH / 2 - MSG_NEWGAME.get_width() / 2, WIN_HEIGHT / 2 - MSG_NEWGAME.get_height() / 2 + 50 ]
         )
+
+    #   instrução de fechar o pgm
+    win.blit(MSG_QUIT, [4, 4])
 
     time.sleep(0.015)
     pygame.display.flip()
