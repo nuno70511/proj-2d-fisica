@@ -1,24 +1,10 @@
 import pygame, time, sys, math, random
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
+from bullet import Bullet
+from target import Target
 
 pygame.init()
 pygame.display.set_caption("Pixel Raiders")
-
-class Bullet:
-    _bullets = []
-
-    def __init__(self, x, y):
-        self._bullets.append(self)
-        self.x = x
-        self.y = y
-
-class Target:
-    _targets = []
-
-    def __init__(self, x, y):
-        self._targets.append(self)
-        self.x = x
-        self.y = y
 
 WIN_WIDTH = 700; WIN_HEIGHT = 500
 win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
