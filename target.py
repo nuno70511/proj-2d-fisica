@@ -1,8 +1,5 @@
 class Target:
-    _targets = []
-
     def __init__(self, x, y):
-        self._targets.append(self)
         self.x = x
         self.y = y
 

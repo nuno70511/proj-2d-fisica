@@ -1,8 +1,5 @@
 class Bullet:
-    _bullets = []
-
     def __init__(self, x, y):
-        self._bullets.append(self)
         self.x = x
         self.y = y
 

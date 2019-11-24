@@ -28,12 +28,15 @@ paddle_x = 0                        #   o valor das abcissas do lado esquerdo do
 vx = 10
 vy = 10
 dt = 3
-targets_move_right = True       #   condição de os alvos estarem a mover-se para a direita
-targets_move_down = False       #   condição de os alvos moverem-se para baixo
-
+bullets = []                        #   guarda as instâncias das balas
+targets = []                        #   guarda as instâncias dos alvos
+targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
+targets_move_down = False           #   condição de os alvos moverem-se para baixo
 # instancializar 10 alvos
-Target(20, 40); Target(70, 40); Target(120, 40); Target(170, 40); Target(220, 40)
-Target(20, 90); Target(70, 90); Target(120, 90); Target(170, 90); Target(220, 90)
+targets.extend([
+    Target(20, 40), Target(70, 40), Target(120, 40), Target(170, 40), Target(220, 40),
+    Target(20, 90), Target(70, 90), Target(120, 90), Target(170, 90), Target(220, 90)
+])
 
 while True:
     win.fill(BLACK)
@@ -43,7 +46,7 @@ while True:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
                 x = paddle_x + PADDLE_WIDTH / 2
                 y = PADDLE_Y - 10 
-                Bullet(x, y)
+                bullets.append(Bullet(x, y))
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
@@ -56,11 +59,13 @@ while True:
         pygame.quit()
         sys.exit()
     if key_pressed[K_RETURN] and dt == 0:   # se ENTER premido e o jogo estiver terminado, começar novo jogo
-        Bullet._bullets = []
-        Target._targets = []
+        bullets = []
+        targets = []
         targets_move_right = True
-        Target(20, 40); Target(70, 40); Target(120, 40); Target(170, 40); Target(220, 40)
-        Target(20, 90); Target(70, 90); Target(120, 90); Target(170, 90); Target(220, 90)
+        targets.extend([
+            Target(20, 40), Target(70, 40), Target(120, 40), Target(170, 40), Target(220, 40),
+            Target(20, 90), Target(70, 90), Target(120, 90), Target(170, 90), Target(220, 90)
+        ])
         dt = 3
     
 
@@ -68,34 +73,35 @@ while True:
     pygame.draw.rect(win, WHITE, (paddle_x, PADDLE_Y, PADDLE_WIDTH, 10), 0)
 
     # comportamento das balas
-    for bullet in Bullet._bullets:
+    for bullet in bullets:
 
         pygame.draw.circle(win, BLUE, ((int)(bullet.x), (int)(bullet.y)), 10, 0) # desenhar as balas
 
-        if not Target._targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
-                                        # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
+        if not targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
+                                # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
 
         bullet.y -= 10 * dt * 0.1 # mover as balas
 
-        for target in Target._targets:                                      # para cada alvo,
+        for target in targets:                                              # para cada alvo,
             if (bullet.y >= target.y - 10 and bullet.y <= target.y + 10     # se uma bala está à mesma altitude dos alvos
             and bullet.x >= target.x - 10 and bullet.x <= target.x + 10):   # verificar se a bala se sobrepõe a algum
-                Bullet._bullets.remove(bullet)                              # se sim, remover a bala e o alvo
-                Target._targets.remove(target)
+                bullets.remove(bullet)                                      # se sim, remover a bala e o alvo
+                targets.remove(target)
                 break
 
-        if bullet.y <= 0: Bullet._bullets.remove(bullet) # apagar as balas que saem da janela
+        if bullet.y <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
 
     # comportamento dos alvos
-    for target in Target._targets:
+    for target in targets:
 
         # desenhar alvos
         pygame.draw.circle(win, RED, ((int)(target.x), target.y), 10, 0)
 
         # mover os alvos
-        if targets_move_right: target.x += vx * dt * 0.1
-        if not targets_move_right: target.x -= vx * dt * 0.1
+        if targets_move_right : target.x += vx * dt * 0.1
+        else : target.x -= vx * dt * 0.1
 
+        # se houver colisão entre um alvo e o tanque, apresentar mensagem de jogo perdido
         if target.y >= PADDLE_Y and target.x >= paddle_x and target.x <= paddle_x + PADDLE_WIDTH:
             dt = 0
             win.blit(
@@ -121,10 +127,10 @@ while True:
 
     # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos
     if targets_move_down:
-        for target in Target._targets: target.y += 50
+        for target in targets: target.y += 50
         targets_move_down = False
 
-    if not Target._targets:     # se não houver alvos, apresentar mensagem de jogo ganho
+    if not targets:     # se não houver alvos, apresentar mensagem de jogo ganho
         dt = 0
         win.blit(
             MSG_YOUWIN,
