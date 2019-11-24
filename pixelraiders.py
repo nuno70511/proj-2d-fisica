@@ -1,7 +1,7 @@
 import pygame, time, sys, math, random
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
 from bullet import Bullet
-from target import Target
+from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget
 
 pygame.init()
 pygame.display.set_caption("Pixel Raiders")
@@ -34,8 +34,8 @@ targets_move_right = True           #   condição de os alvos estarem a mover-s
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 # instancializar 10 alvos
 targets.extend([
-    Target(20, 40), Target(70, 40), Target(120, 40), Target(170, 40), Target(220, 40),
-    Target(20, 90), Target(70, 90), Target(120, 90), Target(170, 90), Target(220, 90)
+    StrongTarget(20, 40), ToughTarget(70, 40), KnockbackTarget(120, 40), ToughTarget(170, 40), StrongTarget(220, 40),
+    WeakTarget(20, 90),   WeakTarget(70, 90),  WeakTarget(120, 90),      WeakTarget(170, 90),  WeakTarget(220, 90)
 ])
 
 while True:
@@ -63,8 +63,8 @@ while True:
         targets = []
         targets_move_right = True
         targets.extend([
-            Target(20, 40), Target(70, 40), Target(120, 40), Target(170, 40), Target(220, 40),
-            Target(20, 90), Target(70, 90), Target(120, 90), Target(170, 90), Target(220, 90)
+            StrongTarget(20, 40), ToughTarget(70, 40), KnockbackTarget(120, 40), ToughTarget(170, 40), StrongTarget(220, 40),
+            WeakTarget(20, 90),   WeakTarget(70, 90),  WeakTarget(120, 90),      WeakTarget(170, 90),  WeakTarget(220, 90)
         ])
         dt = 3
     
@@ -85,8 +85,10 @@ while True:
         for target in targets:                                              # para cada alvo,
             if (bullet.y >= target.y - 10 and bullet.y <= target.y + 10     # se uma bala está à mesma altitude dos alvos
             and bullet.x >= target.x - 10 and bullet.x <= target.x + 10):   # verificar se a bala se sobrepõe a algum
-                bullets.remove(bullet)                                      # se sim, remover a bala e o alvo
-                targets.remove(target)
+                target.lose_hit_points(1)                                   # se sim, retirar um ponto de vida ao alvo
+                if target.hit_points == 0 : targets.remove(target)          # caso não reste mais vida ao alvo, remove-o
+                elif target.id in [3]: target.knockback(50)                 # caso contrário, procurar por reações do alvo
+                bullets.remove(bullet)                                      # por fim, remover a bala
                 break
 
         if bullet.y <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
@@ -95,7 +97,7 @@ while True:
     for target in targets:
 
         # desenhar alvos
-        pygame.draw.circle(win, RED, ((int)(target.x), target.y), 10, 0)
+        pygame.draw.circle(win, target.color, ((int)(target.x), (int)(target.y)), 10, 0)
 
         # mover os alvos
         if targets_move_right : target.x += vx * dt * 0.1
