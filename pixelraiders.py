@@ -2,6 +2,7 @@ import pygame, time, sys, math, random
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
 from bullet import Bullet
 from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget
+from tank import Tank
 
 pygame.init()
 pygame.display.set_caption("Pixel Raiders")
@@ -22,9 +23,6 @@ MSG_GAMEOVER = get_font(48).render("GAME OVER!", True, RED, BLACK)
 MSG_NEWGAME = get_font(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
 MSG_QUIT = get_font(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
 
-PADDLE_WIDTH = 30                   #   largura do tanque
-PADDLE_Y = WIN_HEIGHT - 10          #   o valor das ordenadas do topo do tanque
-paddle_x = 0                        #   o valor das abcissas do lado esquerdo do tanque
 vx = 10
 vy = 10
 dt = 3
@@ -32,6 +30,9 @@ bullets = []                        #   guarda as instâncias das balas
 targets = []                        #   guarda as instâncias dos alvos
 targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
+
+tank = Tank(WIN_WIDTH / 2 - 20, WIN_HEIGHT - 20, 40, 20)     # instancializar o tanque
+
 # instancializar 10 alvos
 targets.extend([
     StrongTarget(20, 40), ToughTarget(70, 40), KnockbackTarget(120, 40), ToughTarget(170, 40), StrongTarget(220, 40),
@@ -44,17 +45,17 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYUP and dt != 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
-                x = paddle_x + PADDLE_WIDTH / 2
-                y = PADDLE_Y - 10 
+                x = tank.x + tank.width / 2 - 3 # centro do canhão
+                y = tank.y - 10
                 bullets.append(Bullet(x, y))
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
-        if paddle_x <= 1: paddle_x = 1
-        else: paddle_x -= dt
+        if tank.x <= 1 : tank.x = 1
+        else : tank.x -= dt
     if key_pressed[K_RIGHT]  and dt != 0: # mover o tanque para a direita
-        if paddle_x + PADDLE_WIDTH + 1 >= WIN_WIDTH: paddle_x = WIN_WIDTH - PADDLE_WIDTH - 1
-        else: paddle_x += dt
+        if tank.x + tank.width + 1 >= WIN_WIDTH : tank.x = WIN_WIDTH - tank.width - 1
+        else : tank.x += dt
     if key_pressed[K_ESCAPE]:   # se ESC premido, sair do jogo
         pygame.quit()
         sys.exit()
@@ -62,6 +63,7 @@ while True:
         bullets = []
         targets = []
         targets_move_right = True
+        tank.x = WIN_WIDTH / 2 - 20
         targets.extend([
             StrongTarget(20, 40), ToughTarget(70, 40), KnockbackTarget(120, 40), ToughTarget(170, 40), StrongTarget(220, 40),
             WeakTarget(20, 90),   WeakTarget(70, 90),  WeakTarget(120, 90),      WeakTarget(170, 90),  WeakTarget(220, 90)
@@ -70,12 +72,12 @@ while True:
     
 
     # desenhar o tanque
-    pygame.draw.rect(win, WHITE, (paddle_x, PADDLE_Y, PADDLE_WIDTH, 10), 0)
+    pygame.draw.rect(win, WHITE, (tank.x, tank.y, tank.width, tank.height), 0)
 
     # comportamento das balas
     for bullet in bullets:
 
-        pygame.draw.circle(win, BLUE, ((int)(bullet.x), (int)(bullet.y)), 10, 0) # desenhar as balas
+        pygame.draw.circle(win, BLUE, ((int)(bullet.x), (int)(bullet.y)), 6, 0) # desenhar as balas
 
         if not targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
                                 # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
@@ -104,7 +106,7 @@ while True:
         else : target.x -= vx * dt * 0.1
 
         # se houver colisão entre um alvo e o tanque, apresentar mensagem de jogo perdido
-        if target.y >= PADDLE_Y and target.x >= paddle_x and target.x <= paddle_x + PADDLE_WIDTH:
+        if target.y >= tank.y and target.x >= tank.x and target.x <= tank.x + tank.width:
             dt = 0
             win.blit(
                 MSG_GAMEOVER,
