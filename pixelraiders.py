@@ -125,18 +125,17 @@ while True:
 
         # quando os alvos chegam ao extremo direito do ecrã
         if target.x >= WIN_WIDTH - 20:
-            targets_move_right = False
             targets_move_down = True
 
         # quando os alvos chegam ao extremo esquerdo do ecrã
         if target.x <= 20:
-            targets_move_right = True
             targets_move_down = True
 
     # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos
     if targets_move_down:
         for target in targets: target.y += 50
         targets_move_down = False
+        targets_move_right = not targets_move_right
 
     if not targets:     # se não houver alvos, apresentar mensagem de jogo ganho
         dt = 0
