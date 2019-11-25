@@ -43,7 +43,7 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYUP and dt != 0 and tank.clip > 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
-                x = tank.x + tank.width / 2 - 8 / 2 # centro do canhão
+                x = tank.x + tank.width / 2 - 4 # centro do canhão
                 y = tank.y - 10
                 bullets.append(SmallBullet(x, y))
                 tank.clip -= 1
@@ -87,11 +87,14 @@ while True:
 
         for target in targets:                                              # para cada alvo,
             if (bullet.y >= target.y - 10 and bullet.y <= target.y + 10     # se uma bala está à mesma altitude dos alvos
-            and bullet.x >= target.x - 10 and bullet.x <= target.x + 10):   # verificar se a bala se sobrepõe a algum
-                target.lose_hit_points(1)                                   # se sim, retirar um ponto de vida ao alvo
-                if target.hit_points == 0 : targets.remove(target)          # caso não reste mais vida ao alvo, remove-o
-                elif target.id in [3]: target.knockback(50)                 # caso contrário, procurar por reações do alvo
-                bullets.remove(bullet)                                      # por fim, remover a bala
+            and bullet.x >= target.x - 10 and bullet.x <= target.x + 10):   # verifica se a bala se sobrepõe a algum
+                bullets.remove(bullet)                                      # se sim, remove a bala
+                target.lose_hit_points(1)                                   # e retira um ponto de vida ao alvo
+                if target.hit_points == 0:                                  # caso não reste mais vida ao alvo,
+                    targets.remove(target)                                  # remove-o
+                    break                                                   # e não vê mais nenhuma condição
+                target.update_color()                                       # caso contrário, a cor altera
+                if hasattr(target, "knockback") : target.knockback(50)      # e procura por outras reações do alvo
                 break
 
         if bullet.y <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
@@ -148,7 +151,7 @@ while True:
         )
 
     #   apresentar número de balas no clip
-    MSG_BULLETS = get_font(10).render("BULLETS: %s" %tank.clip, True, WHITE, BLACK)
+    MSG_BULLETS = get_font(10).render("BULLETS: {}".format(tank.clip), True, WHITE, BLACK)
     win.blit(MSG_BULLETS, [WIN_WIDTH - 124, WIN_HEIGHT - 14])
 
     #   instrução de fechar o pgm

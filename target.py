@@ -6,7 +6,6 @@ class Target:
 class WeakTarget(Target):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 0
         self.hit_points = 1
         self.color = (255, 0, 0)
 
@@ -17,22 +16,25 @@ class WeakTarget(Target):
 class ToughTarget(WeakTarget):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 1
         self.hit_points = 2
-        self.color = (0, 255, 0)
+        self.colors = [(255, 0, 0), (0, 255, 0)]
+        self.color = self.colors[-1]
 
-class StrongTarget(WeakTarget):
+    def update_color(self):
+        self.color = self.colors[1 - self.hit_points]
+
+class StrongTarget(ToughTarget):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 2
         self.hit_points = 3
-        self.color = (255, 255, 0)
+        self.colors.append((255, 255, 0))
+        self.color = self.colors[-1]
 
 class KnockbackTarget(ToughTarget):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 3
-        self.color = (0, 255, 255)
+        self.colors = [(255, 0, 0), (0, 255, 255)]
+        self.color = self.colors[-1]
     
     def knockback(self, y):
         self.y -= y
