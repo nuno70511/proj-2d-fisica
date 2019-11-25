@@ -33,6 +33,10 @@ class StrongTarget(ToughTarget):
 class KnockbackTarget(ToughTarget):
     def __init__(self, x, y):
         super().__init__(x, y)
+<<<<<<< HEAD
+=======
+        self.id = 3
+>>>>>>> b057845ab18f9b443e1c2bdc952219a6f05066cb
         self.colors = [(255, 0, 0), (0, 255, 255)]
         self.color = self.colors[-1]
     
