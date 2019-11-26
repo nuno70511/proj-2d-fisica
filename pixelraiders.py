@@ -33,8 +33,8 @@ tank = Tank(WIN_WIDTH / 2 - 20, WIN_HEIGHT - 20, 40, 20, 10, 4, 4, 2)     # inst
 
 # instancializar 10 alvos
 targets.extend([
-    StrongTarget(20, 40), ToughTarget(70, 40), KnockbackTarget(120, 40), ToughTarget(170, 40), StrongTarget(220, 40),
-    WeakTarget(20, 90),   WeakTarget(70, 90),  WeakTarget(120, 90),      WeakTarget(170, 90),  WeakTarget(220, 90)
+    StrongTarget(20, 40, 20, 20), ToughTarget(70, 40, 20, 20), KnockbackTarget(120, 40, 20, 20), ToughTarget(170, 40, 20, 20), StrongTarget(220, 40, 20, 20),
+    WeakTarget(20, 90, 20, 20),   WeakTarget(70, 90, 20, 20),  WeakTarget(120, 90, 20, 20),      WeakTarget(170, 90, 20, 20),  WeakTarget(220, 90, 20, 20)
 ])
 
 while True:
@@ -85,16 +85,16 @@ while True:
 
         bullet.y -= bullet.vy * dt * 0.1 # mover as balas
 
-        for target in targets:                                              # para cada alvo,
-            if (bullet.y >= target.y - 10 and bullet.y <= target.y + 10     # se uma bala está à mesma altitude dos alvos
-            and bullet.x >= target.x - 10 and bullet.x <= target.x + 10):   # verifica se a bala se sobrepõe a algum
-                bullets.remove(bullet)                                      # se sim, remove a bala
-                target.lose_hit_points(1)                                   # e retira um ponto de vida ao alvo
-                if target.hit_points == 0:                                  # caso não reste mais vida ao alvo,
-                    targets.remove(target)                                  # remove-o
-                    break                                                   # e não vê mais nenhuma condição
-                target.update_color()                                       # caso contrário, a cor altera
-                if hasattr(target, "knockback") : target.knockback(50)      # e procura por outras reações do alvo
+        for target in targets:                                                  # para cada alvo
+            if (bullet.y >= target.y and bullet.y <= target.y + target.height   # se uma bala está à mesma altitude dos alvos
+            and bullet.x >= target.x and bullet.x <= target.x + target.width):  # verifica se a bala se sobrepõe a algum
+                bullets.remove(bullet)                                          # se sim, remove a bala
+                target.lose_hit_points(1)                                       # e retira um ponto de vida ao alvo
+                if target.hit_points == 0:                                      # caso não reste mais vida ao alvo,
+                    targets.remove(target)                                      # remove-o
+                    break                                                       # e não vê mais nenhuma condição
+                target.update_color()                                           # caso contrário, a cor altera
+                if hasattr(target, "knockback") : target.knockback(50)          # e procura por outras reações do alvo
                 break
 
         if bullet.y <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
@@ -103,7 +103,7 @@ while True:
     for target in targets:
 
         # desenhar alvos
-        pygame.draw.circle(win, target.color, ((int)(target.x), (int)(target.y)), 10, 0)
+        win.blit(target.sprite, (target.calc_center_x(), target.calc_center_y()))
 
         # mover os alvos
         if targets_move_right : target.x += tank.vx * dt * 0.1
