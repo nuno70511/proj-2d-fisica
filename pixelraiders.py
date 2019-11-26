@@ -131,7 +131,7 @@ while True:
         if target.x <= 20:
             targets_move_down = True
 
-    # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos
+    # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos e mudar a sua direção
     if targets_move_down:
         for target in targets: target.y += 50
         targets_move_down = False

@@ -3,7 +3,7 @@ class Target:
         self.x = x
         self.y = y
 
-class WeakTarget(Target):   #alvos vermelhos (1 vida)
+class WeakTarget(Target):   # alvos vermelhos (1 vida)
     def __init__(self, x, y):
         super().__init__(x, y)
         self.hit_points = 1
@@ -13,24 +13,24 @@ class WeakTarget(Target):   #alvos vermelhos (1 vida)
         if self.hit_points >= 1 : self.hit_points -= amount
         else : self.hit_points = 0
 
-class ToughTarget(WeakTarget): #alvos verdes (2 vidas)
+class ToughTarget(WeakTarget): # alvos verdes (2 vidas)
     def __init__(self, x, y):
         super().__init__(x, y)
         self.hit_points = 2
         self.colors = [(255, 0, 0), (0, 255, 0)]
         self.color = self.colors[-1]
 
-    def update_color(self):
-        self.color = self.colors[1 - self.hit_points]
+    def update_color(self):     # a lista onde as cores estão guardadas é lida da direita para esquerda
+        self.color = self.colors[self.hit_points - 1]
 
-class StrongTarget(ToughTarget): #alvos amarelos (3 vidas)
+class StrongTarget(ToughTarget): # alvos amarelos (3 vidas)
     def __init__(self, x, y):
         super().__init__(x, y)
         self.hit_points = 3
         self.colors.append((255, 255, 0))
         self.color = self.colors[-1]
 
-class KnockbackTarget(ToughTarget): #alvos azuis (um knockback e +1 vida)
+class KnockbackTarget(ToughTarget): # alvos azuis (um knockback e +1 vida)
     def __init__(self, x, y):
         super().__init__(x, y)
         self.colors = [(255, 0, 0), (0, 255, 255)]
