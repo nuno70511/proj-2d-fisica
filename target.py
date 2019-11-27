@@ -8,10 +8,10 @@ class Target(pygame.sprite.Sprite):
         self.width = width
         self.height = height
 
-    def calc_center_x(self):
+    def calc_top_left_x(self):
         return self.x - self.width / 2
 
-    def calc_center_y(self):
+    def calc_top_left_y(self):
         return self.y - self.height / 2
 
 class WeakTarget(Target):   # alvos vermelhos (1 vida)

@@ -29,7 +29,7 @@ targets = []                        #   guarda as instâncias dos alvos
 targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
-tank = Tank(WIN_WIDTH / 2 - 20, WIN_HEIGHT - 20, 40, 20, 10, 4, 4, 2)     # instancializar o tanque
+tank = Tank(WIN_WIDTH / 2 - 20, WIN_HEIGHT - 20, 31, 24, 10, 4, 4, 2)     # instancializar o tanque
 
 # instancializar 10 alvos
 targets.extend([
@@ -43,7 +43,7 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYUP and dt != 0 and tank.clip > 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
-                x = tank.x + tank.width / 2 - 4 # centro do canhão
+                x = math.ceil(tank.x + tank.width / 2) # centro do canhão
                 y = tank.y - 10
                 bullets.append(SmallBullet(x, y))
                 tank.clip -= 1
@@ -73,7 +73,7 @@ while True:
 
 
     # desenhar o tanque
-    pygame.draw.rect(win, WHITE, (tank.x, tank.y, tank.width, tank.height), 0)
+    win.blit(tank.sprite, (tank.x, tank.y))
 
     # comportamento das balas
     for bullet in bullets:
@@ -103,7 +103,7 @@ while True:
     for target in targets:
 
         # desenhar alvos
-        win.blit(target.sprite, (target.calc_center_x(), target.calc_center_y()))
+        win.blit(target.sprite, (target.calc_top_left_x(), target.calc_top_left_y()))
 
         # mover os alvos
         if targets_move_right : target.x += tank.vx * dt * 0.1
