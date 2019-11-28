@@ -29,10 +29,10 @@ targets = []                        #   guarda as instâncias dos alvos
 targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
-tank = Tank((WIN_WIDTH >> 1) - 20, WIN_HEIGHT - 20, 31, 24, 10, 4, 4, 2)     # instancializar o tanque
+tank = Tank((WIN_WIDTH >> 1) - 20, WIN_HEIGHT - 20, 31, 24, 10, 6, 6, 1.5)     # instancializar o tanque
 
 # instancializar 10 alvos
-targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT))
+targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT, 6))
 
 while True:
     win.fill(BLACK)
@@ -60,9 +60,9 @@ while True:
         targets = []
         targets_move_right = True
         tank.x = (WIN_WIDTH >> 1) - 20
-        tank.clip = 4
+        tank.clip = 6
         tank.reload_timer = 0
-        targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT))
+        targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT, 6))
         dt = 3
 
 
@@ -86,6 +86,7 @@ while True:
                 target.lose_hit_points(1)                                       # e retira um ponto de vida ao alvo
                 if target.hit_points == 0:                                      # caso não reste mais vida ao alvo,
                     targets.remove(target)                                      # remove-o
+                    if len(targets) == 1 : targets[0].vx = targets[0].vx << 1   # se só sobrar um alvo, duplica o seu vx
                     break                                                       # e não vê mais nenhuma condição
                 target.update_color()                                           # caso contrário, a cor altera
                 if hasattr(target, "knockback"): target.knockback(50, targets)  # e procura por outras reações do alvo
@@ -97,11 +98,11 @@ while True:
     for target in targets:
 
         # desenhar alvos
-        win.blit(target.sprite, (target.calc_top_left_x(), target.calc_top_left_y()))
+        win.blit(target.sprite, (target.x, target.y))
 
         # mover os alvos
-        if targets_move_right : target.x += tank.vx * dt * 0.1
-        else : target.x -= tank.vx * dt * 0.1
+        if targets_move_right : target.x += target.vx * dt * 0.1
+        else : target.x -= target.vx * dt * 0.1
 
         # se houver colisão entre um alvo e o tanque, apresentar mensagem de jogo perdido
         if target.y >= tank.y and target.x >= tank.x and target.x <= tank.x + tank.width:
@@ -117,12 +118,14 @@ while True:
                 [ (WIN_WIDTH >> 1) - (MSG_NEWGAME.get_width() >> 1), (WIN_HEIGHT >> 1) - (MSG_NEWGAME.get_height() >> 1) + 50 ]
             )
 
+        border = 20    # afastamento das paredes laterais da janela
+
         # quando os alvos chegam ao extremo direito do ecrã
-        if target.x >= WIN_WIDTH - 20:
+        if target.x + target.width >= WIN_WIDTH - border:
             targets_move_down = True
 
         # quando os alvos chegam ao extremo esquerdo do ecrã
-        if target.x <= 20:
+        if target.x <= border:
             targets_move_down = True
 
     # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos e mudar a sua direção

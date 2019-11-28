@@ -1,22 +1,17 @@
 import pygame, random
 
 class Target(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height):
+    def __init__(self, x, y, width, height, vx):
         super().__init__()
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-
-    def calc_top_left_x(self):
-        return self.x - (self.width >> 1)
-
-    def calc_top_left_y(self):
-        return self.y - (self.height >> 1)
+        self.vx = vx
 
 class WeakTarget(Target):   # alvos vermelhos (1 vida)
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, width, height, vx):
+        super().__init__(x, y, width, height, vx)
         self.hit_points = 1
         self.sprites = [pygame.image.load("./assets/raider_vermelho.png").convert_alpha()]
         self.sprite = self.sprites[-1]
@@ -26,8 +21,8 @@ class WeakTarget(Target):   # alvos vermelhos (1 vida)
         else : self.hit_points = 0
 
 class ToughTarget(WeakTarget): # alvos verdes (2 vidas)
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, width, height, vx):
+        super().__init__(x, y, width, height, vx)
         self.hit_points = 2
         self.sprites.append(pygame.image.load("./assets/raider_verde.png").convert_alpha())
         self.sprite = self.sprites[-1]
@@ -36,15 +31,15 @@ class ToughTarget(WeakTarget): # alvos verdes (2 vidas)
         self.sprite = self.sprites[self.hit_points - 1]
 
 class StrongTarget(ToughTarget): # alvos amarelos (3 vidas)
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, width, height, vx):
+        super().__init__(x, y, width, height, vx)
         self.hit_points = 3
         self.sprites.append(pygame.image.load("./assets/raider_amarelo.png").convert_alpha())
         self.sprite = self.sprites[-1]
 
 class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
-    def __init__(self, x, y, width, height):
-        super().__init__(x, y, width, height)
+    def __init__(self, x, y, width, height, vx):
+        super().__init__(x, y, width, height, vx)
         self.sprites.append(pygame.image.load("./assets/raider_ciano.png").convert_alpha())
         self.sprite = self.sprites[-1]
 
@@ -61,17 +56,17 @@ class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
                 self.y -= knockback_distance
                 is_searching_vacancy = False
 
-def instantiate_targets(amount, ini_x, ini_y, spacing_x, spacing_y, win_width, win_height):
+def instantiate_targets(amount, ini_x, ini_y, spacing_x, spacing_y, win_width, win_height, vx):
     targets = []
 
     pos_x = ini_x; pos_y = ini_y
 
     for i in range(amount):
         num = random.randint(0, 3)
-        if num == 0   : targets.extend([WeakTarget(pos_x, pos_y, 20, 20)])
-        elif num == 1 : targets.extend([ToughTarget(pos_x, pos_y, 20, 20)])
-        elif num == 2 : targets.extend([StrongTarget(pos_x, pos_y, 20, 20)])
-        elif num == 3 : targets.extend([KnockbackTarget(pos_x, pos_y, 20, 20)])
+        if num == 0   : targets.extend([WeakTarget(pos_x, pos_y, 20, 20, vx)])
+        elif num == 1 : targets.extend([ToughTarget(pos_x, pos_y, 20, 20, vx)])
+        elif num == 2 : targets.extend([StrongTarget(pos_x, pos_y, 20, 20, vx)])
+        elif num == 3 : targets.extend([KnockbackTarget(pos_x, pos_y, 20, 20, vx)])
 
         if pos_x + spacing_x >= ini_x + spacing_x * (amount >> 1):
             pos_x = ini_x

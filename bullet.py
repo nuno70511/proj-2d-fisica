@@ -8,7 +8,7 @@ class SmallBullet(Bullet):
         super().__init__(x, y)
         self.id = 0
         self.vy = 10
-        self.radius = 8
+        self.radius = 6
         self.damage = 1
         self.color = (192, 192, 192)
 
