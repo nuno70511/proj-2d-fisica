@@ -1,7 +1,7 @@
 import pygame, time, sys, math, random
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
 from bullet import SmallBullet, LargeBullet, MassiveBullet, FastBullet
-from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget
+from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget, instantiate_targets
 from tank import Tank
 
 pygame.init()
@@ -29,13 +29,10 @@ targets = []                        #   guarda as instâncias dos alvos
 targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
-tank = Tank(WIN_WIDTH / 2 - 20, WIN_HEIGHT - 20, 31, 24, 10, 4, 4, 2)     # instancializar o tanque
+tank = Tank((WIN_WIDTH >> 1) - 20, WIN_HEIGHT - 20, 31, 24, 10, 4, 4, 2)     # instancializar o tanque
 
 # instancializar 10 alvos
-targets.extend([
-    StrongTarget(20, 40, 20, 20), ToughTarget(70, 40, 20, 20), KnockbackTarget(120, 40, 20, 20), ToughTarget(170, 40, 20, 20), StrongTarget(220, 40, 20, 20),
-    WeakTarget(20, 90, 20, 20),   WeakTarget(70, 90, 20, 20),  WeakTarget(120, 90, 20, 20),      WeakTarget(170, 90, 20, 20),  WeakTarget(220, 90, 20, 20)
-])
+targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT))
 
 while True:
     win.fill(BLACK)
@@ -43,7 +40,7 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYUP and dt != 0 and tank.clip > 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
-                x = math.ceil(tank.x + tank.width / 2) # centro do canhão
+                x = math.ceil((int)(tank.x) + ((int)(tank.width) >> 1)) # centro do canhão
                 y = tank.y - 10
                 bullets.append(SmallBullet(x, y))
                 tank.clip -= 1
@@ -62,13 +59,10 @@ while True:
         bullets = []
         targets = []
         targets_move_right = True
-        tank.x = WIN_WIDTH / 2 - 20
+        tank.x = (WIN_WIDTH >> 1) - 20
         tank.clip = 4
         tank.reload_timer = 0
-        targets.extend([
-            StrongTarget(20, 40), ToughTarget(70, 40), KnockbackTarget(120, 40), ToughTarget(170, 40), StrongTarget(220, 40),
-            WeakTarget(20, 90),   WeakTarget(70, 90),  WeakTarget(120, 90),      WeakTarget(170, 90),  WeakTarget(220, 90)
-        ])
+        targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT))
         dt = 3
 
 
@@ -94,7 +88,7 @@ while True:
                     targets.remove(target)                                      # remove-o
                     break                                                       # e não vê mais nenhuma condição
                 target.update_color()                                           # caso contrário, a cor altera
-                if hasattr(target, "knockback") : target.knockback(50)          # e procura por outras reações do alvo
+                if hasattr(target, "knockback"): target.knockback(50, targets)  # e procura por outras reações do alvo
                 break
 
         if bullet.y <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
@@ -115,12 +109,12 @@ while True:
             win.blit(
                 MSG_GAMEOVER,
                 # centrar na janela
-                [ WIN_WIDTH / 2 - MSG_GAMEOVER.get_width() / 2, WIN_HEIGHT / 2 - MSG_GAMEOVER.get_height() / 2 ]
+                [ (WIN_WIDTH >> 1) - (MSG_GAMEOVER.get_width() >> 1), (WIN_HEIGHT >> 1) - (MSG_GAMEOVER.get_height() >> 1) ]
             )
             win.blit(
                 MSG_NEWGAME,
                 # centrar no eixo dos x                         centrar no eixo dos y e empurrar para baixo 50px
-                [ WIN_WIDTH / 2 - MSG_NEWGAME.get_width() / 2, WIN_HEIGHT / 2 - MSG_NEWGAME.get_height() / 2 + 50 ]
+                [ (WIN_WIDTH >> 1) - (MSG_NEWGAME.get_width() >> 1), (WIN_HEIGHT >> 1) - (MSG_NEWGAME.get_height() >> 1) + 50 ]
             )
 
         # quando os alvos chegam ao extremo direito do ecrã
@@ -141,12 +135,12 @@ while True:
         dt = 0
         win.blit(
             MSG_YOUWIN,
-            [ WIN_WIDTH / 2 - MSG_YOUWIN.get_width() / 2, WIN_HEIGHT / 2 - MSG_YOUWIN.get_height() / 2 ] # centrar na janela
+            [ (WIN_WIDTH >> 1) - (MSG_YOUWIN.get_width() >> 1), (WIN_HEIGHT >> 1) - (MSG_YOUWIN.get_height() >> 1) ] # centrar na janela
         )
         win.blit(
             MSG_NEWGAME,
             # centrar no eixo dos x                         centrar no eixo dos y e empurrar para baixo 50px
-            [ WIN_WIDTH / 2 - MSG_NEWGAME.get_width() / 2, WIN_HEIGHT / 2 - MSG_NEWGAME.get_height() / 2 + 50 ]
+            [ (WIN_WIDTH >> 1) - (MSG_NEWGAME.get_width() >> 1), (WIN_HEIGHT >> 1) - (MSG_NEWGAME.get_height() >> 1) + 50 ]
         )
 
     #   apresentar número de balas no clip

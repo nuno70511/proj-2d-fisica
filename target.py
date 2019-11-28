@@ -1,4 +1,4 @@
-import pygame
+import pygame, random
 
 class Target(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height):
@@ -9,10 +9,10 @@ class Target(pygame.sprite.Sprite):
         self.height = height
 
     def calc_top_left_x(self):
-        return self.x - self.width / 2
+        return self.x - (self.width >> 1)
 
     def calc_top_left_y(self):
-        return self.y - self.height / 2
+        return self.y - (self.height >> 1)
 
 class WeakTarget(Target):   # alvos vermelhos (1 vida)
     def __init__(self, x, y, width, height):
@@ -47,6 +47,36 @@ class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
         super().__init__(x, y, width, height)
         self.sprites.append(pygame.image.load("./assets/raider_ciano.png").convert_alpha())
         self.sprite = self.sprites[-1]
-    
-    def knockback(self, y):
-        self.y -= y
+
+    def knockback(self, knockback_distance, targets):
+        is_searching_vacancy = True
+        while is_searching_vacancy:
+            is_above_occupied = False
+            for target in targets:
+                if target.x == self.x and target.y == self.y - knockback_distance:
+                    knockback_distance += knockback_distance
+                    is_above_occupied = True
+                    break
+            if not is_above_occupied:
+                self.y -= knockback_distance
+                is_searching_vacancy = False
+
+def instantiate_targets(amount, ini_x, ini_y, spacing_x, spacing_y, win_width, win_height):
+    targets = []
+
+    pos_x = ini_x; pos_y = ini_y
+
+    for i in range(amount):
+        num = random.randint(0, 3)
+        if num == 0   : targets.extend([WeakTarget(pos_x, pos_y, 20, 20)])
+        elif num == 1 : targets.extend([ToughTarget(pos_x, pos_y, 20, 20)])
+        elif num == 2 : targets.extend([StrongTarget(pos_x, pos_y, 20, 20)])
+        elif num == 3 : targets.extend([KnockbackTarget(pos_x, pos_y, 20, 20)])
+
+        if pos_x + spacing_x >= ini_x + spacing_x * (amount >> 1):
+            pos_x = ini_x
+            pos_y += spacing_y
+        else:
+            pos_x += spacing_x
+
+    return targets
