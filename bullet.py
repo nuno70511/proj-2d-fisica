@@ -12,6 +12,14 @@ class SmallBullet(Bullet):
         self.damage = 1
         self.color = (192, 192, 192)
 
+    def to_imaginarium_rectangle(self):
+        return {
+            "left_x": self.x - self.radius,
+            "top_y": self.y - self.radius,
+            "width": self.radius << 1,
+            "height": self.radius << 1
+        }
+
 class LargeBullet(SmallBullet):
     def __init__(self, x, y):
         super().__init__(x, y)

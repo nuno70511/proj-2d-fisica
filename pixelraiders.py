@@ -79,20 +79,34 @@ while True:
 
         bullet.y -= bullet.vy * dt * 0.1 # mover as balas
 
-        for target in targets:                                                  # para cada alvo
-            if (bullet.y >= target.y and bullet.y <= target.y + target.height   # se uma bala está à mesma altitude dos alvos
-            and bullet.x >= target.x and bullet.x <= target.x + target.width):  # verifica se a bala se sobrepõe a algum
-                bullets.remove(bullet)                                          # se sim, remove a bala
-                target.lose_hit_points(1)                                       # e retira um ponto de vida ao alvo
-                if target.hit_points == 0:                                      # caso não reste mais vida ao alvo,
-                    targets.remove(target)                                      # remove-o
-                    if len(targets) == 1 : targets[0].vx = targets[0].vx << 1   # se só sobrar um alvo, duplica o seu vx
-                    break                                                       # e não vê mais nenhuma condição
-                target.update_color()                                           # caso contrário, a cor altera
-                if hasattr(target, "knockback"): target.knockback(50, targets)  # e procura por outras reações do alvo
-                break
+        for target in targets:
 
-        if bullet.y <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
+            # imaginar a bala como um retangulo para poder comparar posições com os alvos
+            bullet_rect = bullet.to_imaginarium_rectangle()
+
+            # verificar se não há sobreposição
+            if (
+                   bullet_rect["top_y"] > target.y + target.height          # a bala está abaixo do alvo
+                or bullet_rect["top_y"] + bullet_rect["height"] < target.y  # a bala está acima do alvo
+                or bullet_rect["left_x"] + bullet_rect["width"] < target.x  # a bala está mais à esquerda
+                or bullet_rect["left_x"] > target.x + target.width          # a bala está mais à direita
+            ): continue
+
+            # há contacto
+            bullets.remove(bullet)                                          # remover a bala
+            target.lose_hit_points(1)                                       # retirar um ponto de vida ao alvo
+            if target.hit_points == 0:                                      # caso não lhe reste mais vida,
+                targets.remove(target)                                      # remove-o da lista de alvos
+                if len(targets) == 1 :                                      # se agora houver apenas um alvo,
+                    targets[0].vx = targets[0].vx << 1                      # a sua velocidade duplica
+                break                                   # como o alvo deixa de existir, não vê mais nenhuma condição
+
+            # o alvo continua ativo
+            target.update_color()                                           # a cor altera
+            if hasattr(target, "knockback"): target.knockback(50, targets)  # e procura por outras reações do alvo
+            break
+
+        if bullet.y + bullet.radius <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
 
     # comportamento dos alvos
     for target in targets:
