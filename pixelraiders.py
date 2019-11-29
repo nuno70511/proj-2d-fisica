@@ -1,13 +1,17 @@
-import pygame, time, sys, math, random
+import pygame, time, sys, math, random, os
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
 from bullet import SmallBullet, LargeBullet, MassiveBullet, FastBullet
 from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget, instantiate_targets
 from tank import Tank
 
+# definir posição da janela no ecrã ao abrir o jogo
+pos_x = pos_y = 100
+os.environ["SDL_VIDEO_WINDOW_POS"] = "{},{}".format(pos_x, pos_y)
+
 pygame.init()
 pygame.display.set_caption("Pixel Raiders")
 
-WIN_WIDTH = 700; WIN_HEIGHT = 500
+WIN_WIDTH = 900; WIN_HEIGHT = 675
 win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 
 # Definição das cores
@@ -29,7 +33,7 @@ targets = []                        #   guarda as instâncias dos alvos
 targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
-tank = Tank((WIN_WIDTH >> 1) - 20, WIN_HEIGHT - 20, 31, 24, 10, 6, 6, 1.5)     # instancializar o tanque
+tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, 10, 4, 4, 2)     # instancializar o tanque
 
 # instancializar 10 alvos
 targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT, 6))
