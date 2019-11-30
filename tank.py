@@ -14,7 +14,7 @@ class Tank(pygame.sprite.Sprite):
         self.reload_timer = 0
         self.sprite = pygame.image.load("./assets/tanque.png").convert_alpha()
 
-    def inc_timer(self, seconds):
+    def incr_timer(self, seconds):
         self.reload_timer += seconds
         if self.reload_timer > self.reload_duration:
             self.reload_timer = 0

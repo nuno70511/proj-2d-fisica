@@ -36,7 +36,7 @@ targets_move_down = False           #   condição de os alvos moverem-se para b
 tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, 10, 4, 4, 2)     # instancializar o tanque
 
 # instancializar 10 alvos
-targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT, 6))
+targets.extend(instantiate_targets(21, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
 
 while True:
     win.fill(BLACK)
@@ -86,7 +86,7 @@ while True:
         for target in targets:
 
             # imaginar a bala como um retangulo para poder comparar posições com os alvos
-            bullet_rect = bullet.to_imaginarium_rectangle()
+            bullet_rect = bullet.to_imaginary_rectangle()
 
             # verificar se não há sobreposição
             if (
@@ -172,7 +172,7 @@ while True:
     win.blit(MSG_QUIT, [4, 4])
 
     #   se o jogo estiver em andamento, incrementar o timer de reload do tanque
-    if dt != 0 : tank.inc_timer(0.015)
+    if dt != 0 : tank.incr_timer(0.015)
 
     time.sleep(0.015)
     pygame.display.flip()

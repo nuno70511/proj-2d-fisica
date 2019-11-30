@@ -56,22 +56,30 @@ class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
                 self.y -= knockback_distance
                 is_searching_vacancy = False
 
-def instantiate_targets(amount, ini_x, ini_y, spacing_x, spacing_y, win_width, win_height, vx):
-    targets = []
+def instantiate_targets(amount, rows, ini_x, ini_y, incr_x, incr_y, vx, win_width):
+    target_list = []    # retorno da função
 
-    pos_x = ini_x; pos_y = ini_y
+    pos_x = ini_x; pos_y = ini_y # definir posições de colocação do alvo
+                                 # inicialmente serão iguais às posições do primeiro alvo, passadas como argumento
 
     for i in range(amount):
-        num = random.randint(0, 3)
-        if num == 0   : targets.extend([WeakTarget(pos_x, pos_y, 20, 20, vx)])
-        elif num == 1 : targets.extend([ToughTarget(pos_x, pos_y, 20, 20, vx)])
-        elif num == 2 : targets.extend([StrongTarget(pos_x, pos_y, 20, 20, vx)])
-        elif num == 3 : targets.extend([KnockbackTarget(pos_x, pos_y, 20, 20, vx)])
+        # escolher um tipo de alvo aleatoriamente
+        random_target_type = random.choice([
+            WeakTarget(pos_x, pos_y, 20, 20, vx),
+            ToughTarget(pos_x, pos_y, 20, 20, vx),
+            StrongTarget(pos_x, pos_y, 20, 20, vx),
+            KnockbackTarget(pos_x, pos_y, 20, 20, vx)
+        ])
 
-        if pos_x + spacing_x >= ini_x + spacing_x * (amount >> 1):
-            pos_x = ini_x
-            pos_y += spacing_y
+        # adicioná-lo à lista de alvos
+        target_list.append(random_target_type)
+
+        # distribuir o número de alvos pelo número de filas
+        # se a nova pos do x for >= ao x do último elemento da fila  ou  a nova pos do x não está contida na janela
+        if pos_x + incr_x >= ini_x + incr_x * (amount / rows) or pos_x + incr_x >= win_width:
+            pos_x = ini_x        # a posição do x volta ao valor inicial
+            pos_y += incr_y      # atualiza o valor de y para uma nova fila de alvos abaixo
         else:
-            pos_x += spacing_x
+            pos_x += incr_x      # atualiza o valor de x para a posição do próximo alvo
 
-    return targets
+    return target_list
