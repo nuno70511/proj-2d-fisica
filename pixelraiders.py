@@ -2,6 +2,7 @@ import pygame, time, sys, math, random, os
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
 from bullet import SmallBullet, LargeBullet, MassiveBullet, FastBullet
 from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget, instantiate_targets
+from powerup import LB, MB, FB
 from tank import Tank
 
 # definir posição da janela no ecrã ao abrir o jogo
@@ -27,10 +28,11 @@ MSG_GAMEOVER = get_font(48).render("GAME OVER!", True, RED, BLACK)
 MSG_NEWGAME = get_font(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
 MSG_QUIT = get_font(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
 
-dt = 3
+dt = 3                              #   delta tempo
 bullets = []                        #   guarda as instâncias das balas
+powerups = []                       #   guarda as instâncias dos powerups
 targets = []                        #   guarda as instâncias dos alvos
-targets_move_right = True           #   condição de os alvos estarem a mover-se para a direita
+targets_moving_right = True         #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
 tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, 10, 4, 4, 2)     # instancializar o tanque
@@ -45,9 +47,17 @@ while True:
         if event.type == pygame.KEYUP and dt != 0 and tank.clip > 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
                 x = math.ceil((int)(tank.x) + ((int)(tank.width) >> 1)) # centro do canhão
-                y = tank.y - 10
-                bullets.append(SmallBullet(x, y))
-                tank.clip -= 1
+                y = tank.y - 10 # dar ligeiro avanço à bala
+
+                tank.clip -= 1  # remover a bala do clip
+
+                if   tank.bullet_type == "sb" : bullets.append(SmallBullet(x, y)); break
+                elif tank.bullet_type == "lb" : bullets.append(LargeBullet(x, y))
+                elif tank.bullet_type == "mb" : bullets.append(MassiveBullet(x, y))
+                elif tank.bullet_type == "fb" : bullets.append(FastBullet(x, y))
+
+                tank.bullet_type = "sb"     # repor as balas simples depois do powerup ser usado
+                tank.powerup_desc = ""      # limpar powerup da interface
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
@@ -62,11 +72,11 @@ while True:
     if key_pressed[K_RETURN] and dt == 0:   # se ENTER premido e o jogo estiver terminado, começar novo jogo
         bullets = []
         targets = []
-        targets_move_right = True
+        targets_moving_right = True
         tank.x = (WIN_WIDTH >> 1) - 20
         tank.clip = 6
         tank.reload_timer = 0
-        targets.extend(instantiate_targets(10, 20, 40, 40, 50, WIN_WIDTH, WIN_HEIGHT, 6))
+        targets.extend(instantiate_targets(21, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
         dt = 3
 
 
@@ -101,6 +111,8 @@ while True:
             target.lose_hit_points(1)                                       # retirar um ponto de vida ao alvo
             if target.hit_points == 0:                                      # caso não lhe reste mais vida,
                 targets.remove(target)                                      # remove-o da lista de alvos
+                random_powerup = target.create_powerup()                    # gerar probabilidade de aparecer powerup
+                if random_powerup: powerups.append(random_powerup)          # se aparecer, é adicionado à lista de powerups
                 if len(targets) == 1 :                                      # se agora houver apenas um alvo,
                     targets[0].vx = targets[0].vx << 1                      # a sua velocidade duplica
                 break                                   # como o alvo deixa de existir, não vê mais nenhuma condição
@@ -119,7 +131,7 @@ while True:
         win.blit(target.sprite, (target.x, target.y))
 
         # mover os alvos
-        if targets_move_right : target.x += target.vx * dt * 0.1
+        if targets_moving_right : target.x += target.vx * dt * 0.1
         else : target.x -= target.vx * dt * 0.1
 
         # se houver colisão entre um alvo e o tanque, apresentar mensagem de jogo perdido
@@ -150,7 +162,24 @@ while True:
     if targets_move_down:
         for target in targets: target.y += 50
         targets_move_down = False
-        targets_move_right = not targets_move_right
+        targets_moving_right = not targets_moving_right
+    
+    # comportamento dos powerups
+    for powerup in powerups:
+
+        # desenhar powerups
+        win.blit(powerup.sprite, (powerup.x, powerup.y))
+
+        powerup.move_down(2) # mover os powerups
+
+        # contacto entre um powerup e o tanque
+        if powerup.y >= tank.y and powerup.x >= tank.x and powerup.x <= tank.x + tank.width:
+            tank.bullet_type = powerup.bullet_type
+            tank.powerup_desc = powerup.desc # atualizar texto do indicador de powerup na interface
+            powerups.remove(powerup)
+            break
+        
+        if powerup.y + 10 <= 0: powerups.remove(powerup) # apagar os powerups que saem da janela
 
     if not targets:     # se não houver alvos, apresentar mensagem de jogo ganho
         dt = 0
@@ -167,6 +196,11 @@ while True:
     #   apresentar número de balas no clip
     MSG_BULLETS = get_font(10).render("BULLETS: {}".format(tank.clip), True, WHITE, BLACK)
     win.blit(MSG_BULLETS, [WIN_WIDTH - 124, WIN_HEIGHT - 14])
+
+    #   apresentar powerup equipado (se houver)
+    if tank.bullet_type != "sb":
+        MSG_POWERUP = get_font(10).render("POWERUP: {}".format(tank.powerup_desc), True, WHITE, BLACK)
+        win.blit(MSG_POWERUP, [4, WIN_HEIGHT - 14])
 
     #   instrução de fechar o pgm
     win.blit(MSG_QUIT, [4, 4])

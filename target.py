@@ -1,4 +1,5 @@
 import pygame, random
+from powerup import LB, MB, FB
 
 class Target(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, vx):
@@ -8,6 +9,21 @@ class Target(pygame.sprite.Sprite):
         self.width = width
         self.height = height
         self.vx = vx
+    
+    def create_powerup(self):
+        # dicionário dos powerups e respetivas probabilidades
+        powerup_dict = {
+            None               : 10,   # não gerar powerup
+            LB(self.x, self.y) : 5,
+            MB(self.x, self.y) : 1,
+            FB(self.x, self.y) : 3
+        }
+
+        # escolher um powerup aleatoriamente (ou nenhum)
+                                        # multiplicar cada key do dicionário pelo número de vezes do seu value
+        random_powerup = random.choice([key for key in powerup_dict for i in range(powerup_dict[key])])
+        
+        return random_powerup
 
 class WeakTarget(Target):   # alvos vermelhos (1 vida)
     def __init__(self, x, y, width, height, vx):

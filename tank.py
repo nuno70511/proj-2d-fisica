@@ -10,6 +10,8 @@ class Tank(pygame.sprite.Sprite):
         self.vx = vx
         self.clip = clip
         self.clip_size = clip_size
+        self.bullet_type = "sb"  # small bullet
+        self.powerup_desc = ""   # a mostrar na interface
         self.reload_duration = reload_duration
         self.reload_timer = 0
         self.sprite = pygame.image.load("./assets/tanque.png").convert_alpha()
