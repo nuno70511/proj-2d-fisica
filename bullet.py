@@ -9,7 +9,13 @@ class SmallBullet(Bullet):
         self.vy = 10
         self.radius = 6
         self.damage = 1
-        self.color = (192, 192, 192)
+        self.color = (250, 250, 250)
+        self.pierce = 1
+        self.piercedTargets = []
+
+    def pierced(self, target):
+        self.pierce -= 1
+        self.piercedTargets.append(target)
 
     def to_imaginary_rectangle(self):
         return {
@@ -34,9 +40,11 @@ class MassiveBullet(SmallBullet):
         self.radius = 12
         self.damage = 4
         self.color = (255, 0, 255)
+        self.pierce = 3
 
 class FastBullet(SmallBullet):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.vy = 20
+        self.vy = 18
         self.color = (255, 0, 0)
+        self.pierce = 2

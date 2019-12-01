@@ -71,6 +71,7 @@ while True:
         sys.exit()
     if key_pressed[K_RETURN] and dt == 0:   # se ENTER premido e o jogo estiver terminado, começar novo jogo
         bullets = []
+        powerups = []
         targets = []
         targets_moving_right = True
         tank.x = (WIN_WIDTH >> 1) - 20
@@ -109,14 +110,16 @@ while True:
             ): continue
 
             # há contacto
-            bullets.remove(bullet)                                          # remover a bala
-            target.lose_hit_points(bullet.damage)                           # retirar um ponto de vida ao alvo
-            if target.hit_points == 0:                                      # caso não lhe reste mais vida,
-                targets.remove(target)                                      # remove-o da lista de alvos
-                random_powerup = target.create_powerup()                    # gerar probabilidade de aparecer powerup
-                if random_powerup: powerups.append(random_powerup)          # se aparecer, é adicionado à lista de powerups
-                if len(targets) == 1 :                                      # se agora houver apenas um alvo,
-                    targets[0].vx = targets[0].vx << 1                      # a sua velocidade duplica
+            if target not in bullet.piercedTargets:                 # (impedir que a bala perfure o mesmo alvo entre frames)
+                target.lose_hit_points(bullet.damage)               # retirar vida ao alvo
+                bullet.pierced(target)                              # retirar poder de perfuração à bala
+            if bullet.pierce == 0 : bullets.remove(bullet)          # se a bala estiver desgastada, desaparece
+            if target.hit_points == 0:                              # caso o alvo perca toda a sua vida,
+                targets.remove(target)                              # é removido da lista de alvos
+                random_powerup = target.create_powerup()            # e é gerada uma probabilidade de aparecer powerup
+                if random_powerup: powerups.append(random_powerup)  # se aparecer, é adicionado à lista de powerups
+                if len(targets) == 1 :                              # se agora houver apenas um alvo,
+                    targets[0].vx = targets[0].vx << 1              # a sua velocidade duplica
                 break                                   # como o alvo deixa de existir, não vê mais nenhuma condição
 
             # o alvo continua ativo
@@ -181,7 +184,7 @@ while True:
             powerups.remove(powerup)
             break
         
-        if powerup.y + 10 <= 0: powerups.remove(powerup) # apagar os powerups que saem da janela
+        if powerup.y >= WIN_HEIGHT: powerups.remove(powerup) # apagar os powerups que saem da janela
 
     if not targets:     # se não houver alvos, apresentar mensagem de jogo ganho
         dt = 0
