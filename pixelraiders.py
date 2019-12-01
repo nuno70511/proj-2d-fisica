@@ -38,7 +38,7 @@ targets_move_down = False           #   condição de os alvos moverem-se para b
 tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, 10, 4, 4, 2)     # instancializar o tanque
 
 # instancializar 10 alvos
-targets.extend(instantiate_targets(21, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
+targets.extend(instantiate_targets(18, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
 
 while True:
     win.fill(BLACK)
@@ -74,9 +74,11 @@ while True:
         targets = []
         targets_moving_right = True
         tank.x = (WIN_WIDTH >> 1) - 20
-        tank.clip = 6
+        tank.clip = 4
         tank.reload_timer = 0
-        targets.extend(instantiate_targets(21, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
+        tank.bullet_type = "sb"
+        tank.powerup_desc = ""
+        targets.extend(instantiate_targets(18, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
         dt = 3
 
 
@@ -86,7 +88,7 @@ while True:
     # comportamento das balas
     for bullet in bullets:
 
-        pygame.draw.circle(win, BLUE, ((int)(bullet.x), (int)(bullet.y)), bullet.radius, 0) # desenhar as balas
+        pygame.draw.circle(win, bullet.color, ((int)(bullet.x), (int)(bullet.y)), bullet.radius, 0) # desenhar as balas
 
         if not targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
                                 # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
@@ -108,7 +110,7 @@ while True:
 
             # há contacto
             bullets.remove(bullet)                                          # remover a bala
-            target.lose_hit_points(1)                                       # retirar um ponto de vida ao alvo
+            target.lose_hit_points(bullet.damage)                           # retirar um ponto de vida ao alvo
             if target.hit_points == 0:                                      # caso não lhe reste mais vida,
                 targets.remove(target)                                      # remove-o da lista de alvos
                 random_powerup = target.create_powerup()                    # gerar probabilidade de aparecer powerup

@@ -14,9 +14,9 @@ class Target(pygame.sprite.Sprite):
         # dicionário dos powerups e respetivas probabilidades
         powerup_dict = {
             None               : 10,   # não gerar powerup
-            LB(self.x, self.y) : 5,
+            LB(self.x, self.y) : 4,
             MB(self.x, self.y) : 1,
-            FB(self.x, self.y) : 3
+            FB(self.x, self.y) : 5
         }
 
         # escolher um powerup aleatoriamente (ou nenhum)
@@ -33,7 +33,7 @@ class WeakTarget(Target):   # alvos vermelhos (1 vida)
         self.sprite = self.sprites[-1]
 
     def lose_hit_points(self, amount):
-        if self.hit_points >= 1 : self.hit_points -= amount
+        if self.hit_points - amount >= 1 : self.hit_points -= amount
         else : self.hit_points = 0
 
 class ToughTarget(WeakTarget): # alvos verdes (2 vidas)

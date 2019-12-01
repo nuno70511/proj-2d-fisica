@@ -6,7 +6,6 @@ class Bullet:
 class SmallBullet(Bullet):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 0
         self.vy = 10
         self.radius = 6
         self.damage = 1
@@ -23,23 +22,21 @@ class SmallBullet(Bullet):
 class LargeBullet(SmallBullet):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 1
-        self.vy = 6.66
-        self.radius = 12
+        self.vy = 9
+        self.radius = 8
         self.damage = 2
+        self.color = (0, 0, 255)
 
 class MassiveBullet(SmallBullet):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 2
-        self.vy = 3.33
-        self.radius = 24
+        self.vy = 7
+        self.radius = 12
         self.damage = 4
+        self.color = (255, 0, 255)
 
 class FastBullet(SmallBullet):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.id = 3
-        self.vy = 15
-        self.radius = 8
-        self.damage = 1
+        self.vy = 20
+        self.color = (255, 0, 0)
