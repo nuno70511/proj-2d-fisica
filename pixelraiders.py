@@ -1,12 +1,12 @@
 import pygame, time, sys, math, random, os
 from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN, K_UP, K_DOWN
-from bullet import SmallBullet, LargeBullet, MassiveBullet, FastBullet, Boomerang
-from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget, instantiate_targets
-from powerup import LB, MB, FB
+from bullet import *
+from target import *
+from powerup import LB, MB, FB, BR
 from tank import Tank
 
 # definir posição da janela no ecrã ao abrir o jogo
-pos_x = pos_y = 100
+pos_x, pos_y = 100, 50
 os.environ["SDL_VIDEO_WINDOW_POS"] = "{},{}".format(pos_x, pos_y)
 
 pygame.init()
@@ -46,37 +46,19 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYUP and dt != 0 and tank.clip > 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
-                x = math.ceil((int)(tank.x) + ((int)(tank.width) >> 1)) # centro do canhão
-                y = tank.y - 10 # dar ligeiro avanço à bala
-
-                tank.clip -= 1  # remover a bala do clip
-
-                if   tank.bullet_type == "sb" : bullets.append(SmallBullet(x, y)); break
-                elif tank.bullet_type == "lb" : bullets.append(LargeBullet(x, y))
-                elif tank.bullet_type == "mb" : bullets.append(MassiveBullet(x, y))
-                elif tank.bullet_type == "fb" : bullets.append(FastBullet(x, y))
-                elif tank.bullet_type == "br":
-                    bullets.append(Boomerang(x, y, tank.ang, tank.power))
-
-                tank.bullet_type = "sb"     # repor as balas simples depois do powerup ser usado
-                tank.powerup_desc = ""      # limpar powerup da interface
-                tank.power = 0
-                tank.ang = 90
+                bullets.extend(tank.shoot())
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
-        if tank.x <= 1 : tank.x = 1
-        else : tank.x -= tank.vx
+        tank.move_left()
     if key_pressed[K_RIGHT]  and dt != 0: # mover o tanque para a direita
-        if tank.x + tank.width + 1 >= WIN_WIDTH : tank.x = WIN_WIDTH - tank.width - 1
-        else : tank.x += tank.vx
+        tank.move_right(WIN_WIDTH)
     if key_pressed[K_SPACE] and tank.bullet_type == "br":
-        if tank.power >= 100 : tank.power = 100
-        else : tank.power += 2
+        tank.charge_bullet()
     if key_pressed[K_UP] and tank.bullet_type == "br":
-        if tank.ang != 45 : tank.ang -= 1
+        tank.incr_ang()
     if key_pressed[K_DOWN] and tank.bullet_type == "br":
-        if tank.ang != 135 : tank.ang += 1
+        tank.decr_ang()
     if key_pressed[K_ESCAPE]:   # se ESC premido, sair do jogo
         pygame.quit()
         sys.exit()
@@ -95,71 +77,53 @@ while True:
 
 
     # desenhar o tanque
-    win.blit(tank.sprite, (tank.x, tank.y))
+    tank.draw(win)
 
     # comportamento das balas
     for bullet in bullets:
 
-        pygame.draw.circle(win, bullet.color, ((int)(bullet.x), (int)(bullet.y)), bullet.radius, 0) # desenhar as balas
+        bullet.draw(win) # desenhar as balas
 
         if not targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
                                 # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
 
-        if hasattr(bullet, "update_pos") : bullet.update_pos(dt)
-        else: bullet.y -= bullet.vy * dt * 0.1 # mover as balas
+        bullet.move(dt) # mover as balas
 
-        for target in targets:
+        # devolve o índice do alvo de contacto ou -1 se não houver interseção
+        contact_index_of_target = bullet.look_for_contact(bullet, targets)
 
-            # imaginar a bala como um retangulo para poder comparar posições com os alvos
-            bullet_rect = bullet.to_imaginary_rectangle()
+        if contact_index_of_target != -1:
+            target = targets[contact_index_of_target]
 
-            # verificar se não há sobreposição
-            if (
-                   bullet_rect["top_y"] > target.y + target.height          # a bala está abaixo do alvo
-                or bullet_rect["top_y"] + bullet_rect["height"] < target.y  # a bala está acima do alvo
-                or bullet_rect["left_x"] + bullet_rect["width"] < target.x  # a bala está mais à esquerda
-                or bullet_rect["left_x"] > target.x + target.width          # a bala está mais à direita
-            ): continue
+            if bullet.pierce == 0 : bullets.remove(bullet) # se a bala estiver desgastada, desaparece
 
-            # há contacto
-            if target not in bullet.piercedTargets:                 # (impedir que a bala perfure o mesmo alvo entre frames)
-                target.lose_hit_points(bullet.damage)               # retirar vida ao alvo
-                bullet.pierced(target)                              # retirar poder de perfuração à bala
-            if bullet.pierce == 0 : bullets.remove(bullet)          # se a bala estiver desgastada, desaparece
             if target.hit_points == 0:                              # caso o alvo perca toda a sua vida,
                 targets.remove(target)                              # é removido da lista de alvos
                 random_powerup = target.create_powerup()            # e é gerada uma probabilidade de aparecer powerup
                 if random_powerup: powerups.append(random_powerup)  # se aparecer, é adicionado à lista de powerups
                 if len(targets) == 1 :                              # se agora houver apenas um alvo,
                     targets[0].vx = targets[0].vx << 1              # a sua velocidade duplica
-                break                                   # como o alvo deixa de existir, não vê mais nenhuma condição
-
+                break
+        
             # o alvo continua ativo
-            target.update_color()                                           # a cor altera
-            if hasattr(target, "knockback"): target.knockback(50, targets)  # e procura por outras reações do alvo
+            target.update(targets)
             break
 
         # apagar as balas que saem da janela
-        if (
-            bullet.y + bullet.radius <= 0               # sair pelo topo
-         or bullet.y - bullet.radius >= WIN_HEIGHT      # sair pelo fundo
-         or bullet.x + bullet.radius <= 0               # sair pela esquerda
-         or bullet.x - bullet.radius >= WIN_WIDTH       # sair pela direita
-        ):
-            bullets.remove(bullet)
+        if bullet.is_out_of_bounds(WIN_HEIGHT, WIN_WIDTH) : bullets.remove(bullet)
 
     # comportamento dos alvos
     for target in targets:
 
         # desenhar alvos
-        win.blit(target.sprite, (target.x, target.y))
+        target.draw(win)
 
         # mover os alvos
-        if targets_moving_right : target.x += target.vx * dt * 0.1
-        else : target.x -= target.vx * dt * 0.1
+        if targets_moving_right : target.move_right(dt)
+        else : target.move_left(dt)
 
         # se houver colisão entre um alvo e o tanque, apresentar mensagem de jogo perdido
-        if target.y >= tank.y and target.x >= tank.x and target.x <= tank.x + tank.width:
+        if target.hit_tank(tank.x, tank.y, tank.width):
             dt = 0
             win.blit(
                 MSG_GAMEOVER,
@@ -172,19 +136,13 @@ while True:
                 [ (WIN_WIDTH >> 1) - (MSG_NEWGAME.get_width() >> 1), (WIN_HEIGHT >> 1) - (MSG_NEWGAME.get_height() >> 1) + 50 ]
             )
 
-        border = 20    # afastamento das paredes laterais da janela
-
-        # quando os alvos chegam ao extremo direito do ecrã
-        if target.x + target.width >= WIN_WIDTH - border:
-            targets_move_down = True
-
-        # quando os alvos chegam ao extremo esquerdo do ecrã
-        if target.x <= border:
+        # quando os alvos chegam a um extremo da janela
+        if target.hit_border(WIN_WIDTH, 20):
             targets_move_down = True
 
     # se um alvo chegou a um extremo, aumentar ordenadas de todos os alvos e mudar a sua direção
     if targets_move_down:
-        for target in targets: target.y += 50
+        for target in targets: target.move_down(50)
         targets_move_down = False
         targets_moving_right = not targets_moving_right
     
@@ -192,18 +150,18 @@ while True:
     for powerup in powerups:
 
         # desenhar powerups
-        win.blit(powerup.sprite, (powerup.x, powerup.y))
+        powerup.draw(win)
 
         powerup.move_down(2) # mover os powerups
 
         # contacto entre um powerup e o tanque
-        if powerup.y >= tank.y and powerup.x >= tank.x and powerup.x <= tank.x + tank.width:
+        if powerup.collected(tank.x, tank.y, tank.width):
             tank.bullet_type = powerup.bullet_type
             tank.powerup_desc = powerup.desc # atualizar texto do indicador de powerup na interface
             powerups.remove(powerup)
             break
         
-        if powerup.y >= WIN_HEIGHT: powerups.remove(powerup) # apagar os powerups que saem da janela
+        if powerup.is_out_of_bounds(WIN_HEIGHT): powerups.remove(powerup) # apagar os powerups que saem da janela
 
     if not targets:     # se não houver alvos, apresentar mensagem de jogo ganho
         dt = 0

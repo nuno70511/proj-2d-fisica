@@ -1,19 +1,31 @@
-import math
+import pygame, math
 
-class Bullet:
+class SmallBullet():
     def __init__(self, x, y):
         self.x = x
         self.y = y
-
-class SmallBullet(Bullet):
-    def __init__(self, x, y):
-        super().__init__(x, y)
         self.vy = 10
         self.radius = 6
         self.damage = 1
         self.color = (250, 250, 250)
         self.pierce = 1
         self.piercedTargets = []
+    
+    def draw(self, win):
+        pygame.draw.circle(win, self.color, ((int)(self.x), (int)(self.y)), self.radius, 0)
+    
+    def move(self, dt):
+        self.y -= self.vy * dt * 0.1
+    
+    def is_out_of_bounds(self, WIN_HEIGHT, WIN_WIDTH):
+        if (
+            self.y + self.radius <= 0               # sair pelo topo
+         or self.y - self.radius >= WIN_HEIGHT      # sair pelo fundo
+         or self.x + self.radius <= 0               # sair pela esquerda
+         or self.x - self.radius >= WIN_WIDTH       # sair pela direita
+        ):
+            return True
+        return False
 
     def pierced(self, target):
         self.pierce -= 1
@@ -26,6 +38,32 @@ class SmallBullet(Bullet):
             "width": self.radius << 1,
             "height": self.radius << 1
         }
+    
+    def look_for_contact(self, bullet, targets):
+        for i in range(len(targets)):
+            target = targets[i]
+            
+            # imaginar a bala como um retangulo para poder comparar posições com os alvos
+            bullet_rect = bullet.to_imaginary_rectangle()
+
+            # verificar se não há sobreposição
+            if (
+                bullet_rect["top_y"] > target.y + target.height          # a bala está abaixo do alvo
+                or bullet_rect["top_y"] + bullet_rect["height"] < target.y  # a bala está acima do alvo
+                or bullet_rect["left_x"] + bullet_rect["width"] < target.x  # a bala está mais à esquerda
+                or bullet_rect["left_x"] > target.x + target.width          # a bala está mais à direita
+            ): continue
+        
+            # há contacto
+            self.handle_contact(bullet, target)
+            return i
+            
+        return -1
+
+    def handle_contact(self, bullet, target):
+        if target not in bullet.piercedTargets:                 # (impedir que a bala perfure o mesmo alvo entre frames)
+            target.lose_hit_points(bullet.damage)               # retirar vida ao alvo
+            bullet.pierced(target)                              # retirar poder de perfuração à bala
 
 class LargeBullet(SmallBullet):
     def __init__(self, x, y):
@@ -56,14 +94,14 @@ class Boomerang(SmallBullet):
         super().__init__(x, y)
         self.g = 9.8
         self.t = 0
-        self.theta = theta
+        self.theta = 180 - theta    # inverter o angulo de modo a que a sua amplitude aumente para a direita
         self.x0 = x
         self.y0 = y
         self.v0_x = v0 * math.cos(math.radians((float) (self.theta)))
         self.v0_y = v0 * math.sin(math.radians((float) (self.theta)))
         self.pierce = 7
     
-    def update_pos(self, dt):
+    def move(self, dt):
         self.x = self.x0 + self.v0_x * self.t
         self.y = self.y0 - self.v0_y * self.t + 0.5 * self.g * self.t**2
         self.t += dt * 0.02

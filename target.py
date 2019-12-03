@@ -1,14 +1,44 @@
 import pygame, random
 from powerup import LB, MB, FB, BR
-
-class Target(pygame.sprite.Sprite):
+    
+class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
     def __init__(self, x, y, width, height, vx):
-        super().__init__()
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.vx = vx
+        self.hit_points = 1
+        self.sprites = [pygame.image.load("./assets/raider_vermelho.png").convert_alpha()]
+        self.sprite = self.sprites[-1]
+
+    def draw(self, win):
+        win.blit(self.sprite, (self.x, self.y))
+    
+    def move_right(self, dt):
+        self.x += self.vx * dt * 0.1
+    
+    def move_left(self, dt):
+        self.x -= self.vx * dt * 0.1
+
+    def move_down(self, amount):
+        self.y += amount
+
+    def hit_border(self, WIN_WIDTH, margin_of_error):
+        if self.x + self.width >= WIN_WIDTH - margin_of_error or self.x <= margin_of_error : return True
+        return False
+    
+    def hit_tank(self, tx, ty, twidth):
+        if self.y >= ty and self.x >= tx and self.x <= tx + twidth : return True
+        return False
+    
+    def update(self, targets):
+        self.update_color()                                           # a cor altera
+        if hasattr(self, "knockback"): self.knockback(50, targets)    # e procura por outras reações do alvo
+
+    def lose_hit_points(self, amount):
+        if self.hit_points - amount >= 1 : self.hit_points -= amount
+        else : self.hit_points = 0
     
     def create_powerup(self):
         # dicionário dos powerups e respetivas probabilidades
@@ -25,17 +55,6 @@ class Target(pygame.sprite.Sprite):
         random_powerup = random.choice([key for key in powerup_dict for i in range(powerup_dict[key])])
         
         return random_powerup
-
-class WeakTarget(Target):   # alvos vermelhos (1 vida)
-    def __init__(self, x, y, width, height, vx):
-        super().__init__(x, y, width, height, vx)
-        self.hit_points = 1
-        self.sprites = [pygame.image.load("./assets/raider_vermelho.png").convert_alpha()]
-        self.sprite = self.sprites[-1]
-
-    def lose_hit_points(self, amount):
-        if self.hit_points - amount >= 1 : self.hit_points -= amount
-        else : self.hit_points = 0
 
 class ToughTarget(WeakTarget): # alvos verdes (2 vidas)
     def __init__(self, x, y, width, height, vx):
