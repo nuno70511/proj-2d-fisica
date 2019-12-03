@@ -10,6 +10,8 @@ class Tank(pygame.sprite.Sprite):
         self.vx = vx
         self.clip = clip
         self.clip_size = clip_size
+        self.power = 0
+        self.ang = 90
         self.bullet_type = "sb"  # small bullet
         self.powerup_desc = ""   # a mostrar na interface
         self.reload_duration = reload_duration

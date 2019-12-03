@@ -1,6 +1,6 @@
 import pygame, time, sys, math, random, os
-from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN
-from bullet import SmallBullet, LargeBullet, MassiveBullet, FastBullet
+from pygame import K_ESCAPE, K_LEFT, K_RIGHT, K_SPACE, K_RETURN, K_UP, K_DOWN
+from bullet import SmallBullet, LargeBullet, MassiveBullet, FastBullet, Boomerang
 from target import WeakTarget, ToughTarget, StrongTarget, KnockbackTarget, instantiate_targets
 from powerup import LB, MB, FB
 from tank import Tank
@@ -35,7 +35,7 @@ targets = []                        #   guarda as instâncias dos alvos
 targets_moving_right = True         #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
-tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, 10, 4, 4, 2)     # instancializar o tanque
+tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, dt, 4, 4, 2)     # instancializar o tanque
 
 # instancializar 10 alvos
 targets.extend(instantiate_targets(18, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
@@ -55,17 +55,28 @@ while True:
                 elif tank.bullet_type == "lb" : bullets.append(LargeBullet(x, y))
                 elif tank.bullet_type == "mb" : bullets.append(MassiveBullet(x, y))
                 elif tank.bullet_type == "fb" : bullets.append(FastBullet(x, y))
+                elif tank.bullet_type == "br":
+                    bullets.append(Boomerang(x, y, tank.ang, tank.power))
 
                 tank.bullet_type = "sb"     # repor as balas simples depois do powerup ser usado
                 tank.powerup_desc = ""      # limpar powerup da interface
+                tank.power = 0
+                tank.ang = 90
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
         if tank.x <= 1 : tank.x = 1
-        else : tank.x -= dt
+        else : tank.x -= tank.vx
     if key_pressed[K_RIGHT]  and dt != 0: # mover o tanque para a direita
         if tank.x + tank.width + 1 >= WIN_WIDTH : tank.x = WIN_WIDTH - tank.width - 1
-        else : tank.x += dt
+        else : tank.x += tank.vx
+    if key_pressed[K_SPACE] and tank.bullet_type == "br":
+        if tank.power >= 100 : tank.power = 100
+        else : tank.power += 2
+    if key_pressed[K_UP] and tank.bullet_type == "br":
+        if tank.ang != 45 : tank.ang -= 1
+    if key_pressed[K_DOWN] and tank.bullet_type == "br":
+        if tank.ang != 135 : tank.ang += 1
     if key_pressed[K_ESCAPE]:   # se ESC premido, sair do jogo
         pygame.quit()
         sys.exit()
@@ -94,7 +105,8 @@ while True:
         if not targets : break  # se não houver alvos, o jogo está parado e as balas ficarão estáticas
                                 # logo, não interessa estudar o seu comportamento e o ciclo é quebrado
 
-        bullet.y -= bullet.vy * dt * 0.1 # mover as balas
+        if hasattr(bullet, "update_pos") : bullet.update_pos(dt)
+        else: bullet.y -= bullet.vy * dt * 0.1 # mover as balas
 
         for target in targets:
 
@@ -127,7 +139,14 @@ while True:
             if hasattr(target, "knockback"): target.knockback(50, targets)  # e procura por outras reações do alvo
             break
 
-        if bullet.y + bullet.radius <= 0: bullets.remove(bullet) # apagar as balas que saem da janela
+        # apagar as balas que saem da janela
+        if (
+            bullet.y + bullet.radius <= 0               # sair pelo topo
+         or bullet.y - bullet.radius >= WIN_HEIGHT      # sair pelo fundo
+         or bullet.x + bullet.radius <= 0               # sair pela esquerda
+         or bullet.x - bullet.radius >= WIN_WIDTH       # sair pela direita
+        ):
+            bullets.remove(bullet)
 
     # comportamento dos alvos
     for target in targets:
@@ -206,6 +225,10 @@ while True:
     if tank.bullet_type != "sb":
         MSG_POWERUP = get_font(10).render("POWERUP: {}".format(tank.powerup_desc), True, WHITE, BLACK)
         win.blit(MSG_POWERUP, [4, WIN_HEIGHT - 14])
+
+        if tank.bullet_type == "br":
+            MSG_CHARGE = get_font(14).render("CHARGE: {}% ANG: {}".format((int)(tank.power), tank.ang), True, WHITE, BLACK)
+            win.blit(MSG_CHARGE, [304, WIN_HEIGHT - 14])
 
     #   instrução de fechar o pgm
     win.blit(MSG_QUIT, [4, 4])

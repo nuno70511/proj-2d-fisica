@@ -1,3 +1,5 @@
+import math
+
 class Bullet:
     def __init__(self, x, y):
         self.x = x
@@ -48,3 +50,20 @@ class FastBullet(SmallBullet):
         self.vy = 18
         self.color = (255, 0, 0)
         self.pierce = 2
+
+class Boomerang(SmallBullet):
+    def __init__(self, x, y, theta, v0):
+        super().__init__(x, y)
+        self.g = 9.8
+        self.t = 0
+        self.theta = theta
+        self.x0 = x
+        self.y0 = y
+        self.v0_x = v0 * math.cos(math.radians((float) (self.theta)))
+        self.v0_y = v0 * math.sin(math.radians((float) (self.theta)))
+        self.pierce = 7
+    
+    def update_pos(self, dt):
+        self.x = self.x0 + self.v0_x * self.t
+        self.y = self.y0 - self.v0_y * self.t + 0.5 * self.g * self.t**2
+        self.t += dt * 0.02

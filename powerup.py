@@ -29,3 +29,10 @@ class FB(Powerup):
         self.sprite = pygame.image.load("./assets/powerup_fb.png").convert_alpha()
         self.bullet_type = "fb"
         self.desc = "FAST BULLET"
+
+class BR(Powerup):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.sprite = pygame.image.load("./assets/powerup_br.png").convert_alpha()
+        self.bullet_type = "br"
+        self.desc = "BOOMERANG"

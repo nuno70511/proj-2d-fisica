@@ -1,5 +1,5 @@
 import pygame, random
-from powerup import LB, MB, FB
+from powerup import LB, MB, FB, BR
 
 class Target(pygame.sprite.Sprite):
     def __init__(self, x, y, width, height, vx):
@@ -13,10 +13,11 @@ class Target(pygame.sprite.Sprite):
     def create_powerup(self):
         # dicionário dos powerups e respetivas probabilidades
         powerup_dict = {
-            None               : 10,   # não gerar powerup
-            LB(self.x, self.y) : 4,
-            MB(self.x, self.y) : 1,
-            FB(self.x, self.y) : 5
+            None               : 15,   # não gerar powerup
+            LB(self.x, self.y) : 5,
+            MB(self.x, self.y) : 2,
+            FB(self.x, self.y) : 5,
+            BR(self.x, self.y) : 3
         }
 
         # escolher um powerup aleatoriamente (ou nenhum)
