@@ -22,29 +22,29 @@ class Powerup(pygame.sprite.Sprite):
         self.y += incr_y
 
 class LB(Powerup):
-    def __init__(self, x, y):
+    def __init__(self, x, y, sprite):
         super().__init__(x, y)
-        self.sprite = pygame.image.load("./assets/powerup_lb.png").convert_alpha()
+        self.sprite = sprite
         self.bullet_type = "lb"
         self.desc = "LARGE BULLET"
 
 class MB(Powerup):
-    def __init__(self, x, y):
+    def __init__(self, x, y, sprite):
         super().__init__(x, y)
-        self.sprite = pygame.image.load("./assets/powerup_mb.png").convert_alpha()
+        self.sprite = sprite
         self.bullet_type = "mb"
         self.desc = "MASSIVE BULLET"
 
 class FB(Powerup):
-    def __init__(self, x, y):
+    def __init__(self, x, y, sprite):
         super().__init__(x, y)
-        self.sprite = pygame.image.load("./assets/powerup_fb.png").convert_alpha()
+        self.sprite = sprite
         self.bullet_type = "fb"
         self.desc = "FAST BULLET"
 
 class BR(Powerup):
-    def __init__(self, x, y):
+    def __init__(self, x, y, sprite):
         super().__init__(x, y)
-        self.sprite = pygame.image.load("./assets/powerup_br.png").convert_alpha()
+        self.sprite = sprite
         self.bullet_type = "br"
         self.desc = "BOOMERANG"

@@ -2,7 +2,7 @@ import pygame, math
 from bullet import *
 
 class Tank(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, vx, clip, clip_size, reload_duration):
+    def __init__(self, x, y, width, height, vx, clip, clip_size, reload_duration, sprite):
         super().__init__()
         self.x = x
         self.y = y
@@ -17,7 +17,7 @@ class Tank(pygame.sprite.Sprite):
         self.powerup_desc = ""   # a mostrar na interface
         self.reload_duration = reload_duration
         self.reload_timer = 0
-        self.sprite = pygame.image.load("./assets/tanque.png").convert_alpha()
+        self.sprite = sprite
     
     def draw(self, win):
         win.blit(self.sprite, (self.x, self.y))

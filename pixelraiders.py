@@ -22,12 +22,15 @@ RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 0, 255)
 
-def get_font(size) : return pygame.font.Font("./assets/PressStart2P-Regular.ttf", size)
-MSG_YOUWIN = get_font(48).render("YOU WIN!", True, WHITE, BLACK)
-MSG_GAMEOVER = get_font(48).render("GAME OVER!", True, RED, BLACK)
-MSG_NEWGAME = get_font(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
-MSG_QUIT = get_font(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
+FONT = "./assets/PressStart2P-Regular.ttf"  # carregar a font
 
+def set_font_size(size) : return pygame.font.Font(FONT, size)
+MSG_YOUWIN = set_font_size(48).render("YOU WIN!", True, WHITE, BLACK)
+MSG_GAMEOVER = set_font_size(48).render("GAME OVER!", True, RED, BLACK)
+MSG_NEWGAME = set_font_size(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
+MSG_QUIT = set_font_size(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
+
+# variáveis globais
 dt = 3                              #   delta tempo
 bullets = []                        #   guarda as instâncias das balas
 powerups = []                       #   guarda as instâncias dos powerups
@@ -35,10 +38,27 @@ targets = []                        #   guarda as instâncias dos alvos
 targets_moving_right = True         #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
 
-tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, dt, 4, 4, 2)     # instancializar o tanque
+# carregar sprites
+TANK_IMG = pygame.image.load("./assets/tanque.png").convert_alpha()
+RAIDER_RED_IMG = pygame.image.load("./assets/raider_vermelho.png").convert_alpha()
+RAIDER_GREEN_IMG = pygame.image.load("./assets/raider_verde.png").convert_alpha()
+RAIDER_YELLOW_IMG = pygame.image.load("./assets/raider_amarelo.png").convert_alpha()
+RAIDER_CYAN_IMG = pygame.image.load("./assets/raider_ciano.png").convert_alpha()
+PWRUP_LB_IMG = pygame.image.load("./assets/powerup_lb.png").convert_alpha()
+PWRUP_MB_IMG = pygame.image.load("./assets/powerup_mb.png").convert_alpha()
+PWRUP_FB_IMG = pygame.image.load("./assets/powerup_fb.png").convert_alpha()
+PWRUP_BR_IMG = pygame.image.load("./assets/powerup_br.png").convert_alpha()
+
+# instancializar o tanque
+tank = Tank((WIN_WIDTH >> 1) - 31, WIN_HEIGHT - 48, 62, 48, dt, 4, 4, 2, TANK_IMG)
 
 # instancializar 10 alvos
-targets.extend(instantiate_targets(18, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
+targets.extend(
+    instantiate_targets(
+        18, 3, 20, 40, 40, 50, 6, WIN_WIDTH,
+        [RAIDER_RED_IMG, RAIDER_GREEN_IMG, RAIDER_YELLOW_IMG, RAIDER_CYAN_IMG]
+    )
+)
 
 while True:
     win.fill(BLACK)
@@ -72,7 +92,12 @@ while True:
         tank.reload_timer = 0
         tank.bullet_type = "sb"
         tank.powerup_desc = ""
-        targets.extend(instantiate_targets(18, 3, 20, 40, 40, 50, 6, WIN_WIDTH))
+        targets.extend(
+            instantiate_targets(
+                [RAIDER_RED_IMG, RAIDER_GREEN_IMG, RAIDER_YELLOW_IMG, RAIDER_CYAN_IMG],
+                18, 3, 20, 40, 40, 50, 6, WIN_WIDTH
+            )
+        )
         dt = 3
 
 
@@ -99,7 +124,9 @@ while True:
 
             if target.hit_points == 0:                              # caso o alvo perca toda a sua vida,
                 targets.remove(target)                              # é removido da lista de alvos
-                random_powerup = target.create_powerup()            # e é gerada uma probabilidade de aparecer powerup
+                random_powerup = target.create_powerup([            # e é gerada uma probabilidade de aparecer powerup
+                    PWRUP_LB_IMG, PWRUP_MB_IMG, PWRUP_FB_IMG, PWRUP_BR_IMG
+                ])
                 if random_powerup: powerups.append(random_powerup)  # se aparecer, é adicionado à lista de powerups
                 if len(targets) == 1 :                              # se agora houver apenas um alvo,
                     targets[0].vx = targets[0].vx << 1              # a sua velocidade duplica

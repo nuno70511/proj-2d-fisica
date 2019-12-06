@@ -1,16 +1,15 @@
 import pygame, random
 from powerup import LB, MB, FB, BR
-    
+
 class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
-    def __init__(self, x, y, width, height, vx):
+    def __init__(self, x, y, width, height, vx, sprite):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.vx = vx
         self.hit_points = 1
-        self.sprites = [pygame.image.load("./assets/raider_vermelho.png").convert_alpha()]
-        self.sprite = self.sprites[-1]
+        self.sprite = sprite
 
     def draw(self, win):
         win.blit(self.sprite, (self.x, self.y))
@@ -40,14 +39,14 @@ class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
         if self.hit_points - amount >= 1 : self.hit_points -= amount
         else : self.hit_points = 0
     
-    def create_powerup(self):
+    def create_powerup(self, sprites):
         # dicionário dos powerups e respetivas probabilidades
         powerup_dict = {
             None               : 15,   # não gerar powerup
-            LB(self.x, self.y) : 5,
-            MB(self.x, self.y) : 2,
-            FB(self.x, self.y) : 5,
-            BR(self.x, self.y) : 3
+            LB(self.x, self.y, sprites[0]) : 5,
+            MB(self.x, self.y, sprites[1]) : 2,
+            FB(self.x, self.y, sprites[2]) : 5,
+            BR(self.x, self.y, sprites[3]) : 3
         }
 
         # escolher um powerup aleatoriamente (ou nenhum)
@@ -57,26 +56,26 @@ class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
         return random_powerup
 
 class ToughTarget(WeakTarget): # alvos verdes (2 vidas)
-    def __init__(self, x, y, width, height, vx):
-        super().__init__(x, y, width, height, vx)
+    def __init__(self, x, y, width, height, vx, sprites):
+        super().__init__(x, y, width, height, vx, sprites)
         self.hit_points = 2
-        self.sprites.append(pygame.image.load("./assets/raider_verde.png").convert_alpha())
+        self.sprites = sprites
         self.sprite = self.sprites[-1]
 
     def update_color(self):     # a lista onde as cores estão guardadas é lida da direita para esquerda
         self.sprite = self.sprites[self.hit_points - 1]
 
 class StrongTarget(ToughTarget): # alvos amarelos (3 vidas)
-    def __init__(self, x, y, width, height, vx):
-        super().__init__(x, y, width, height, vx)
+    def __init__(self, x, y, width, height, vx, sprites):
+        super().__init__(x, y, width, height, vx, sprites)
         self.hit_points = 3
-        self.sprites.append(pygame.image.load("./assets/raider_amarelo.png").convert_alpha())
+        self.sprites = sprites
         self.sprite = self.sprites[-1]
 
 class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
-    def __init__(self, x, y, width, height, vx):
-        super().__init__(x, y, width, height, vx)
-        self.sprites.append(pygame.image.load("./assets/raider_ciano.png").convert_alpha())
+    def __init__(self, x, y, width, height, vx, sprites):
+        super().__init__(x, y, width, height, vx, sprites)
+        self.sprites = sprites
         self.sprite = self.sprites[-1]
 
     def knockback(self, knockback_distance, targets):
@@ -92,7 +91,7 @@ class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
                 self.y -= knockback_distance
                 is_searching_vacancy = False
 
-def instantiate_targets(amount, rows, ini_x, ini_y, incr_x, incr_y, vx, win_width):
+def instantiate_targets(amount, rows, ini_x, ini_y, incr_x, incr_y, vx, win_width, sprites):
     target_list = []    # retorno da função
 
     pos_x = ini_x; pos_y = ini_y # definir posições de colocação do alvo
@@ -101,10 +100,10 @@ def instantiate_targets(amount, rows, ini_x, ini_y, incr_x, incr_y, vx, win_widt
     for i in range(amount):
         # escolher um tipo de alvo aleatoriamente
         random_target_type = random.choice([
-            WeakTarget(pos_x, pos_y, 20, 20, vx),
-            ToughTarget(pos_x, pos_y, 20, 20, vx),
-            StrongTarget(pos_x, pos_y, 20, 20, vx),
-            KnockbackTarget(pos_x, pos_y, 20, 20, vx)
+            WeakTarget(pos_x, pos_y, 20, 20, vx, sprites[:1][0]),
+            ToughTarget(pos_x, pos_y, 20, 20, vx, sprites[:2]),
+            StrongTarget(pos_x, pos_y, 20, 20, vx, sprites[:3]),
+            KnockbackTarget(pos_x, pos_y, 20, 20, vx, sprites[:4])
         ])
 
         # adicioná-lo à lista de alvos
