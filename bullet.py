@@ -99,6 +99,7 @@ class Boomerang(SmallBullet):
         self.y0 = y
         self.v0_x = v0 * math.cos(math.radians((float) (self.theta)))
         self.v0_y = v0 * math.sin(math.radians((float) (self.theta)))
+        self.color = (170, 100, 40)
         self.pierce = 7
     
     def move(self, dt):
