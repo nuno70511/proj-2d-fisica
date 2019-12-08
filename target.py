@@ -47,10 +47,10 @@ class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
         # dicionário dos powerups e respetivas probabilidades
         powerup_dict = {
             None               : 15,   # não gerar powerup
-            LB(x, y, sprites[0]) : 5,
-            MB(x, y, sprites[1]) : 2,
-            FB(x, y, sprites[2]) : 5,
-            BR(x, y, sprites[3]) : 3
+            LB(x, y, 2, sprites[0]) : 5,
+            MB(x, y, 2, sprites[1]) : 2,
+            FB(x, y, 2, sprites[2]) : 5,
+            BR(x, y, 2, sprites[3]) : 3
         }
 
         # escolher um powerup aleatoriamente (ou nenhum)

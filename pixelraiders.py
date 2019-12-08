@@ -135,6 +135,12 @@ while True:
             target.update(targets)
             break
 
+        # apanhar boomerang
+        #if isinstance(bullet, Boomerang) and bullet.got_collected(tank.x, tank.y, tank.width):
+            #tank.bullet_type = "br"
+            #tank.desc = "BOOMERANG"
+            #bullets.remove(bullet)
+
         # apagar as balas que saem da janela
         if bullet.is_out_of_bounds(WIN_HEIGHT, WIN_WIDTH) : bullets.remove(bullet)
 
@@ -178,10 +184,10 @@ while True:
         # desenhar powerups
         powerup.draw(win)
 
-        powerup.move_down(2) # mover os powerups
+        powerup.move_down() # mover os powerups
 
         # contacto entre um powerup e o tanque
-        if powerup.collected(tank.x, tank.y, tank.width):
+        if powerup.got_collected(tank.x, tank.y, tank.width):
             tank.bullet_type = powerup.bullet_type
             tank.powerup_desc = powerup.desc # atualizar texto do indicador de powerup na interface
             powerups.remove(powerup)

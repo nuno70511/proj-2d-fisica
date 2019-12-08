@@ -106,3 +106,7 @@ class Boomerang(SmallBullet):
         self.x = self.x0 + self.v0_x * self.t
         self.y = self.y0 - self.v0_y * self.t + 0.5 * self.g * self.t**2
         self.t += dt * 0.02
+    
+    def got_collected(self, tx, ty, twidth):
+        if self.y >= ty and self.x - self.radius >= tx and self.x + self.radius <= tx + twidth : return True
+        return False
