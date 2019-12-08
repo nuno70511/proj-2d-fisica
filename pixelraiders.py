@@ -93,8 +93,8 @@ while True:
         tank.powerup_desc = ""
         targets.extend(
             instantiate_targets(
-                [RAIDER_RED_IMG, RAIDER_GREEN_IMG, RAIDER_YELLOW_IMG, RAIDER_CYAN_IMG],
-                18, 3, 20, 40, 40, 50, 6, WIN_WIDTH
+                18, 3, 20, 40, 40, 50, 6, WIN_WIDTH,
+                [RAIDER_RED_IMG, RAIDER_GREEN_IMG, RAIDER_YELLOW_IMG, RAIDER_CYAN_IMG]
             )
         )
         dt = 3
