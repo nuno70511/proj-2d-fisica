@@ -19,16 +19,15 @@ win = pygame.display.set_mode((WIN_WIDTH, WIN_HEIGHT))
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
 
 FONT = "./assets/PressStart2P-Regular.ttf"  # carregar a font
 
-def set_font_size(size) : return pygame.font.Font(FONT, size)
-MSG_YOUWIN = set_font_size(48).render("YOU WIN!", True, WHITE, BLACK)
-MSG_GAMEOVER = set_font_size(48).render("GAME OVER!", True, RED, BLACK)
-MSG_NEWGAME = set_font_size(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
-MSG_QUIT = set_font_size(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
+def font_size_of(size) : return pygame.font.Font(FONT, size)    # cria um novo objeto Font com o tamanho que lhe é passado 
+
+MSG_YOUWIN = font_size_of(48).render("YOU WIN!", True, WHITE, BLACK)
+MSG_GAMEOVER = font_size_of(48).render("GAME OVER!", True, RED, BLACK)
+MSG_NEWGAME = font_size_of(12).render("PRESS [ENTER] TO PLAY A NEW GAME", True, WHITE, BLACK)
+MSG_QUIT = font_size_of(8).render("PRESS [ESC] AT ANY TIME TO QUIT THE GAME", True, WHITE, BLACK)
 
 # variáveis globais
 dt = 3                              #   delta tempo
@@ -203,16 +202,16 @@ while True:
         )
 
     #   apresentar número de balas no clip
-    MSG_BULLETS = get_font(10).render("BULLETS: {}".format(tank.clip), True, WHITE, BLACK)
+    MSG_BULLETS = font_size_of(10).render("BULLETS: {}".format(tank.clip), True, WHITE, BLACK)
     win.blit(MSG_BULLETS, [WIN_WIDTH - 124, WIN_HEIGHT - 14])
 
     #   apresentar powerup equipado (se houver)
     if tank.bullet_type != "sb":
-        MSG_POWERUP = get_font(10).render("POWERUP: {}".format(tank.powerup_desc), True, WHITE, BLACK)
+        MSG_POWERUP = font_size_of(10).render("POWERUP: {}".format(tank.powerup_desc), True, WHITE, BLACK)
         win.blit(MSG_POWERUP, [4, WIN_HEIGHT - 14])
 
         if tank.bullet_type == "br":
-            MSG_CHARGE = get_font(14).render("CHARGE: {}% ANG: {}".format((int)(tank.power), tank.ang), True, WHITE, BLACK)
+            MSG_CHARGE = font_size_of(14).render("CHARGE: {}% ANG: {}".format((int)(tank.power), tank.ang), True, WHITE, BLACK)
             win.blit(MSG_CHARGE, [304, WIN_HEIGHT - 14])
 
     #   instrução de fechar o pgm
