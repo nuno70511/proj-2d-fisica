@@ -1,5 +1,5 @@
 import pygame, random
-from powerup import LB, MB, FB, BR
+from powerup import *
 
 class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
     def __init__(self, x, y, width, height, vx, sprite):
@@ -40,13 +40,17 @@ class WeakTarget(pygame.sprite.Sprite):   # alvos vermelhos (1 vida)
         else : self.hit_points = 0
     
     def create_powerup(self, sprites):
+        # centrar o powerup no alvo
+        x = self.x + (self.width >> 1) - (Powerup.width >> 1)
+        y = self.y + (self.height >> 1) - (Powerup.height >> 1)
+
         # dicionário dos powerups e respetivas probabilidades
         powerup_dict = {
             None               : 15,   # não gerar powerup
-            LB(self.x, self.y, sprites[0]) : 5,
-            MB(self.x, self.y, sprites[1]) : 2,
-            FB(self.x, self.y, sprites[2]) : 5,
-            BR(self.x, self.y, sprites[3]) : 3
+            LB(x, y, sprites[0]) : 5,
+            MB(x, y, sprites[1]) : 2,
+            FB(x, y, sprites[2]) : 5,
+            BR(x, y, sprites[3]) : 3
         }
 
         # escolher um powerup aleatoriamente (ou nenhum)

@@ -2,6 +2,9 @@ import pygame
 from bullet import *
 
 class Powerup(pygame.sprite.Sprite):
+    width = 20      # declaradas dentro da classe para poderem ser acedidas antes da instancialização dos objetos
+    height = 10
+
     def __init__(self, x, y):
         super().__init__()
         self.x = x
