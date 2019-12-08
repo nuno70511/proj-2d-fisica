@@ -14,7 +14,6 @@ class Tank(pygame.sprite.Sprite):
         self.power = 0
         self.ang = 90
         self.bullet_type = "sb"  # small bullet
-        self.powerup_desc = ""   # a mostrar na interface
         self.reload_duration = reload_duration
         self.reload_timer = 0
         self.sprite = sprite
@@ -23,17 +22,17 @@ class Tank(pygame.sprite.Sprite):
         win.blit(self.sprite, (self.x, self.y))
     
     def shoot(self):
-        bullet_to_append = []
-
         x = math.ceil((int)(self.x) + ((int)(self.width) >> 1)) # centro do canhão
         y = self.y - 10 # dar ligeiro avanço à bala
 
-        if self.bullet_type == "sb" : bullet_to_append.append(SmallBullet(x, y))
+        new_bullet = None
+
+        if self.bullet_type == "sb" : new_bullet = SmallBullet(x, y)
         else:
-            if   self.bullet_type == "lb" : bullet_to_append.append(LargeBullet(x, y))
-            elif self.bullet_type == "mb" : bullet_to_append.append(MassiveBullet(x, y))
-            elif self.bullet_type == "fb" : bullet_to_append.append(FastBullet(x, y))
-            elif self.bullet_type == "br" : bullet_to_append.append(Boomerang(x, y, self.ang, self.power))
+            if   self.bullet_type == "lb" : new_bullet = LargeBullet(x, y)
+            elif self.bullet_type == "mb" : new_bullet = MassiveBullet(x, y)
+            elif self.bullet_type == "fb" : new_bullet = FastBullet(x, y)
+            elif self.bullet_type == "br" : new_bullet = Boomerang(x, y, self.ang, self.power)
 
             self.bullet_type = "sb"     # repor as balas simples depois do powerup ser usado
             self.powerup_desc = ""      # limpar powerup da interface
@@ -42,7 +41,7 @@ class Tank(pygame.sprite.Sprite):
 
         self.clip -= 1  # remover a bala do clip
 
-        return bullet_to_append
+        return new_bullet
     
     def move_left(self):
         if self.x <= 1 : self.x = 1

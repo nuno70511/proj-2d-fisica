@@ -36,6 +36,7 @@ powerups = []                       #   guarda as instâncias dos powerups
 targets = []                        #   guarda as instâncias dos alvos
 targets_moving_right = True         #   condição de os alvos estarem a mover-se para a direita
 targets_move_down = False           #   condição de os alvos moverem-se para baixo
+powerup_desc = ""                   #   descricao do powerup ativo
 
 # carregar sprites
 TANK_IMG = pygame.image.load("./assets/tanque.png").convert_alpha()
@@ -65,7 +66,8 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.KEYUP and dt != 0 and tank.clip > 0:
             if event.key == pygame.K_SPACE: # ao premir espaço, instanciar uma bala a partir da posição do tanque
-                bullets.extend(tank.shoot())
+                new_bullet = tank.shoot()
+                bullets.append(new_bullet)
 
     key_pressed = pygame.key.get_pressed()
     if key_pressed[K_LEFT] and dt != 0: # mover o tanque para a esquerda
@@ -90,7 +92,7 @@ while True:
         tank.clip = 4
         tank.reload_timer = 0
         tank.bullet_type = "sb"
-        tank.powerup_desc = ""
+        powerup_desc = ""
         targets.extend(
             instantiate_targets(
                 18, 3, 20, 40, 40, 50, 6, WIN_WIDTH,
@@ -136,10 +138,10 @@ while True:
             break
 
         # apanhar boomerang
-        #if isinstance(bullet, Boomerang) and bullet.got_collected(tank.x, tank.y, tank.width):
-            #tank.bullet_type = "br"
-            #tank.desc = "BOOMERANG"
-            #bullets.remove(bullet)
+        if isinstance(bullet, Boomerang) and bullet.got_collected(tank.x, tank.y, tank.width):
+            tank.bullet_type = "br"
+            powerup_desc = "BOOMERANG"
+            bullets.remove(bullet)
 
         # apagar as balas que saem da janela
         if bullet.is_out_of_bounds(WIN_HEIGHT, WIN_WIDTH) : bullets.remove(bullet)
@@ -189,7 +191,7 @@ while True:
         # contacto entre um powerup e o tanque
         if powerup.got_collected(tank.x, tank.y, tank.width):
             tank.bullet_type = powerup.bullet_type
-            tank.powerup_desc = powerup.desc # atualizar texto do indicador de powerup na interface
+            powerup_desc = powerup.desc # atualizar texto do indicador de powerup na interface
             powerups.remove(powerup)
             break
         
@@ -213,7 +215,7 @@ while True:
 
     #   apresentar powerup equipado (se houver)
     if tank.bullet_type != "sb":
-        MSG_POWERUP = font_size_of(10).render("POWERUP: {}".format(tank.powerup_desc), True, WHITE, BLACK)
+        MSG_POWERUP = font_size_of(10).render("POWERUP: {}".format(powerup_desc), True, WHITE, BLACK)
         win.blit(MSG_POWERUP, [4, WIN_HEIGHT - 14])
 
         if tank.bullet_type == "br":
