@@ -79,16 +79,18 @@ class KnockbackTarget(ToughTarget): # alvos ciano (um knockback e +1 vida)
         self.sprite = self.sprites[-1]
 
     def knockback(self, knockback_distance, targets):
+        total_distance = knockback_distance # guarda o valor total de recuo das ordenadas do alvo
+
         is_searching_vacancy = True
         while is_searching_vacancy:
             is_above_occupied = False
             for target in targets:
-                if target.x == self.x and target.y == self.y - knockback_distance:
-                    knockback_distance += knockback_distance
+                if target.x == self.x and target.y == self.y - total_distance:
+                    total_distance += knockback_distance
                     is_above_occupied = True
                     break
             if not is_above_occupied:
-                self.y -= knockback_distance
+                self.y -= total_distance
                 is_searching_vacancy = False
 
 def instantiate_targets(amount, rows, ini_x, ini_y, incr_x, incr_y, vx, win_width, sprites):
